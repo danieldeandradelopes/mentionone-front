@@ -12,13 +12,31 @@ export default function NewBoxPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    await fetch("/api/boxes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, location }),
-    });
+    try {
+      const res = await fetch("/api/boxes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, location }),
+      });
 
-    router.push("/admin/boxes");
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Erro ao criar box:", error);
+        alert(
+          `Erro ao criar box: ${
+            error.error || error.details || "Erro desconhecido"
+          }`
+        );
+        return;
+      }
+
+      const box = await res.json();
+      console.log("Box criado com sucesso:", box);
+      router.push("/admin/boxes");
+    } catch (error) {
+      console.error("Erro ao criar box:", error);
+      alert("Erro ao criar box. Verifique o console para mais detalhes.");
+    }
   }
 
   return (

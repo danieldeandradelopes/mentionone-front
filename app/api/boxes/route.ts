@@ -18,6 +18,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    console.log("POST /api/boxes - Body recebido:", body);
 
     if (!body.name || !body.location) {
       return NextResponse.json(
@@ -31,9 +32,18 @@ export async function POST(req: Request) {
       location: body.location,
     });
 
+    console.log("Box criado com sucesso:", box);
+    console.log("Total de boxes no storage:", (await getAllBoxes()).length);
+
     return NextResponse.json(box, { status: 201 });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Erro ao criar box" }, { status: 500 });
+    console.error("Erro ao criar box:", error);
+    return NextResponse.json(
+      {
+        error: "Erro ao criar box",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
+      { status: 500 }
+    );
   }
 }

@@ -51,6 +51,9 @@ export const boxesStore = {
       ...data,
     };
     boxesStorage.push(newBox);
+    console.log(
+      `Box criado: ${newBox.id} - ${newBox.name}. Total no storage: ${boxesStorage.length}`
+    );
     return newBox;
   },
 
