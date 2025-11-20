@@ -1,7 +1,6 @@
 import Feedback from "@/app/entities/Feedback";
-import LogoutButton from "./LogoutButton";
-import FeedbackList from "./FeedbackList";
 import { getBaseUrl } from "@/app/lib/api";
+import FeedbackList from "./FeedbackList";
 
 async function getFeedbacks(): Promise<Feedback[]> {
   const baseUrl = getBaseUrl();
@@ -21,7 +20,6 @@ export default async function AdminPage() {
         <h1 className="text-xl md:text-2xl font-bold text-gray-800 text-center sm:text-left">
           Painel Admin
         </h1>
-        <LogoutButton />
       </header>
       <main className="max-w-3xl mx-auto w-full">
         <FeedbackList initialFeedbacks={feedbacks} />
