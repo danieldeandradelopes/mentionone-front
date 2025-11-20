@@ -1,0 +1,12 @@
+[
+  {
+    "id": "box-1",
+    "name": "Recepção",
+    "location": "Entrada principal"
+  },
+  {
+    "id": "box-2",
+    "name": "Copa",
+    "location": "Área de convivência"
+  }
+]
