@@ -16,6 +16,8 @@ export default function ReportsPage() {
   });
 
   const [report, setReport] = useState<Report | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadBoxes() {
@@ -26,12 +28,25 @@ export default function ReportsPage() {
   }, []);
 
   async function loadReport() {
-    const params = new URLSearchParams(
-      Object.entries(filters).filter(([, v]) => v !== "")
-    );
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams(
+        Object.entries(filters).filter(([, v]) => v !== "")
+      );
 
-    const res = await fetch(`/api/reports/feedback?${params.toString()}`);
-    setReport(await res.json());
+      const res = await fetch(`/api/reports/feedback?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error("Erro ao carregar relatório");
+      }
+      const data = await res.json();
+      setReport(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
+      setReport(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -87,8 +102,17 @@ export default function ReportsPage() {
           />
         </div>
 
-        <Button onClick={loadReport}>Aplicar filtros</Button>
+        <Button onClick={loadReport} disabled={loading}>
+          {loading ? "Carregando..." : "Aplicar filtros"}
+        </Button>
       </Card>
+
+      {/* --------------------  ERRO  --------------------  */}
+      {error && (
+        <Card className="p-4 bg-red-50 border-red-200">
+          <p className="text-red-600">{error}</p>
+        </Card>
+      )}
 
       {/* --------------------  RESULTADOS  --------------------  */}
       {report && (
@@ -101,33 +125,75 @@ export default function ReportsPage() {
                 {report.totalFeedbacks}
               </div>
             </Card>
+            <Card className="p-4">
+              <div className="text-sm text-gray-500">Categorias diferentes</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {Object.keys(report.groupedByCategory).length}
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-sm text-gray-500">Dias com feedback</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {Object.keys(report.groupedByDay).length}
+              </div>
+            </Card>
           </div>
 
-          {/* TABELA */}
-          <div>
-            <h3 className="font-semibold text-lg mb-2 text-gray-800">
-              Detalhes
-            </h3>
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="p-2 text-gray-700">Data</th>
-                  <th className="p-2 text-gray-700">Categoria</th>
-                  <th className="p-2 text-gray-700">Texto</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(report.groupedByDay).map(([date, count]) => (
-                  <tr key={date} className="border-b border-gray-200">
-                    <td className="p-2 text-gray-800">
-                      {new Date(date).toLocaleDateString()}
-                    </td>
-                    <td className="p-2 text-gray-800">{count}</td>
+          {/* Agrupamento por Categoria */}
+          {Object.keys(report.groupedByCategory).length > 0 && (
+            <div>
+              <h3 className="font-semibold text-lg mb-2 text-gray-800">
+                Por Categoria
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {Object.entries(report.groupedByCategory).map(
+                  ([category, count]) => (
+                    <Card key={category} className="p-3">
+                      <div className="text-sm text-gray-500">{category}</div>
+                      <div className="text-xl font-bold text-gray-800">
+                        {count}
+                      </div>
+                    </Card>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Agrupamento por Dia */}
+          {Object.keys(report.groupedByDay).length > 0 && (
+            <div>
+              <h3 className="font-semibold text-lg mb-2 text-gray-800">
+                Por Dia
+              </h3>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="p-2 text-gray-700">Data</th>
+                    <th className="p-2 text-gray-700">Quantidade</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {Object.entries(report.groupedByDay)
+                    .sort(([a], [b]) => b.localeCompare(a))
+                    .map(([date, count]) => (
+                      <tr key={date} className="border-b border-gray-200">
+                        <td className="p-2 text-gray-800">
+                          {new Date(date).toLocaleDateString("pt-BR")}
+                        </td>
+                        <td className="p-2 text-gray-800">{count}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {report.totalFeedbacks === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              Nenhum feedback encontrado com os filtros aplicados.
+            </div>
+          )}
         </Card>
       )}
     </div>
