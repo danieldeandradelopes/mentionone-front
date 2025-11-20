@@ -31,12 +31,30 @@ export async function PATCH(req: Request, { params }: Params) {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
-  const { id } = await params;
-  const deleted = await deleteBox(id);
+  try {
+    const { id } = await params;
+    console.log(`Tentando excluir box com id: ${id}`);
 
-  if (!deleted) {
-    return NextResponse.json({ error: "Box não encontrada" }, { status: 404 });
+    const deleted = await deleteBox(id);
+
+    if (!deleted) {
+      console.log(`Box com id ${id} não encontrada`);
+      return NextResponse.json(
+        { error: "Box não encontrada" },
+        { status: 404 }
+      );
+    }
+
+    console.log(`Box ${id} excluída com sucesso`);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erro ao excluir box:", error);
+    return NextResponse.json(
+      {
+        error: "Erro ao excluir box",
+        details: error instanceof Error ? error.message : "Erro desconhecido",
+      },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: true });
 }
