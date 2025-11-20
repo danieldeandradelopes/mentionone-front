@@ -22,13 +22,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Monta as classes de fonte de forma determinística (sempre igual SSR/Client)
+  const fontClass = `${geistSans.variable} ${geistMono.variable} antialiased`;
+
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <body className={fontClass}>{children}</body>
     </html>
   );
 }

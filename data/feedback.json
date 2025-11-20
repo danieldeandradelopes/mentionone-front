@@ -5,5 +5,40 @@
     "text": "Teste",
     "category": "limpeza",
     "createdAt": "2025-11-20T00:28:03.254Z"
+  },
+  {
+    "id": "2201b591-2e4f-4083-9563-a7f5ad0cf9d0",
+    "boxId": "batatinha",
+    "text": "Mano, que empresa top.",
+    "category": "limpeza",
+    "createdAt": "2025-11-20T00:52:19.056Z"
+  },
+  {
+    "id": "444f1b89-98ab-4903-b0f1-dff2df383264",
+    "boxId": "batatinha",
+    "text": "Testando tudo",
+    "category": "atendimento",
+    "createdAt": "2025-11-20T00:53:55.845Z"
+  },
+  {
+    "id": "adca04ce-f37b-4b2c-b2a8-e6a648a07ffa",
+    "boxId": "lojadoze",
+    "text": "Novo feedback para a empresa ver.",
+    "category": "atendimento",
+    "createdAt": "2025-11-20T01:28:37.553Z"
+  },
+  {
+    "id": "79bdd90e-03f7-418e-a301-a86bff1f9624",
+    "boxId": "greenbox",
+    "text": "Teste",
+    "category": "infraestrutura",
+    "createdAt": "2025-11-20T01:42:21.241Z"
+  },
+  {
+    "id": "2d1d8877-8243-4adb-afe5-060f3f6a7b6b",
+    "boxId": "greenbox",
+    "text": "Coisas erradas em todas áreas.",
+    "category": "servico",
+    "createdAt": "2025-11-20T01:43:03.458Z"
   }
 ]
