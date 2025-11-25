@@ -27,7 +27,10 @@ export default function QRFeedbackPage({ params }: Props) {
   useEffect(() => {
     if (boxId) {
       fetch(`/qr/${boxId}/branding.json`)
-        .then((res) => res.json())
+        .then((res) => {
+          console.log(res.json(), "res.json()");
+          return res.json();
+        })
         .then(setBranding)
         .catch(() => setBranding(null));
     }
