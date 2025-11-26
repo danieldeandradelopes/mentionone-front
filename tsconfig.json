@@ -22,7 +22,8 @@
       "@/*": ["./*"],
       "@/types/*": ["./types/*"],
       "@/lib/*": ["./app/lib/*"],
-      "@/components/*": ["./components/*"]
+      "@/components/*": ["./components/*"],
+      "@/@backend-types/*": ["./src/@backend-types/*"]
     }
   },
   "include": [

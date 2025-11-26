@@ -1,5 +1,5 @@
 import { getApiUrl } from "./api";
-import { LoginResponse } from "./auth";
+import { LoginResponse } from "./auth-actions";
 
 export interface LoginCredentials {
   email: string;

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "typecheck": "tsc --noEmit",
     "updatetypes": "./scripts/sync-backend-types.sh",
     "updatetypes:advanced": "./scripts/sync-backend-types-advanced.sh"
   },

@@ -3,7 +3,7 @@ import FileDataResponse from "@/types/FileType";
 import { useMutation } from "@tanstack/react-query";
 import { UPLOAD_KEYS } from "./keys";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3003";
 
 export const useUpload = () => {
   const { getToken, register, getUser } = useAuth();
