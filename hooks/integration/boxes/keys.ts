@@ -16,4 +16,6 @@ export const BOXES_KEYS = {
   list: () => [...BOXES_KEYS.lists()] as const,
   details: () => [...BOXES_KEYS.all(), "detail"] as const,
   detail: (id: number) => [...BOXES_KEYS.details(), id] as const,
+  detailBySlug: (slug: string) =>
+    [...BOXES_KEYS.details(), "slug", slug] as const,
 } as const;

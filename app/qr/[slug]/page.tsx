@@ -1,46 +1,31 @@
 "use client";
-import { use, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useGetBoxBranding } from "@/hooks/integration/boxes/queries";
+import { useCreateFeedback } from "@/hooks/integration/feedback/mutations";
 import Image from "next/image";
-
-// Definição do tipo para branding
-interface Branding {
-  primaryColor: string;
-  secondaryColor: string;
-  logoUrl: string;
-  clientName: string;
-}
+import { useRouter } from "next/navigation";
+import { use, useState } from "react";
 
 type Props = {
-  params: Promise<{ boxId: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export default function QRFeedbackPage({ params }: Props) {
-  const { boxId } = use(params);
-
+  const { slug } = use(params);
+  const router = useRouter();
   const [text, setText] = useState("");
   const [category, setCategory] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [branding, setBranding] = useState<Branding | null>(null);
-  const router = useRouter();
 
-  useEffect(() => {
-    if (boxId) {
-      fetch(`/qr/${boxId}/branding.json`)
-        .then((res) => {
-          console.log(res.json(), "res.json()");
-          return res.json();
-        })
-        .then(setBranding)
-        .catch(() => setBranding(null));
-    }
-  }, [boxId]);
+  // Busca o branding pelo slug do box
+  const { data: branding, isLoading, isError, error } = useGetBoxBranding(slug);
 
-  if (!boxId) {
+  // Hook para criar feedback
+  const createFeedbackMutation = useCreateFeedback();
+
+  if (!slug) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
         <h1 className="text-2xl font-bold mb-4 text-center text-red-600">
-          URL inválida! Parâmetro boxId não informado.
+          URL inválida! Parâmetro slug não informado.
         </h1>
         <p className="text-gray-600 text-center">
           Por favor, acesse via link correto ou peça suporte.
@@ -49,7 +34,7 @@ export default function QRFeedbackPage({ params }: Props) {
     );
   }
 
-  if (!branding) {
+  if (isLoading) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
         <div className="animate-pulse text-gray-400">
@@ -59,35 +44,46 @@ export default function QRFeedbackPage({ params }: Props) {
     );
   }
 
+  if (isError || !branding) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
+        <h1 className="text-2xl font-bold mb-4 text-center text-red-600">
+          Erro ao carregar identidade visual
+        </h1>
+        <p className="text-gray-600 text-center">
+          {error?.message || "A caixa não existe ou está sem branding."}
+        </p>
+      </main>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    console.log(boxId, text, category);
-
-    await fetch("/api/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        boxId,
+    try {
+      await createFeedbackMutation.mutateAsync({
+        box_slug: slug, // Envia o slug diretamente
         text,
         category,
-      }),
-    });
-
-    router.push(`/qr/${boxId}/thank-you`);
+        status: "pending",
+      });
+      router.push(`/qr/${slug}/thank-you`);
+    } catch (error) {
+      console.error("Erro ao enviar feedback:", error);
+      // Você pode adicionar um toast ou mensagem de erro aqui
+    }
   };
 
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-start p-6"
-      style={{ background: branding.primaryColor }}
+      style={{ background: branding.primary_color }}
     >
       <div className="w-full max-w-md mt-10 bg-white rounded-2xl shadow-lg p-5 border">
-        {branding.logoUrl && (
+        {branding.logo_url && (
           <Image
-            src={branding.logoUrl}
-            alt={branding.clientName}
+            src={branding.logo_url}
+            alt={branding.client_name ?? ""}
             className="mx-auto mb-6 max-h-16"
             style={{ objectFit: "contain" }}
             width={300}
@@ -97,10 +93,10 @@ export default function QRFeedbackPage({ params }: Props) {
         )}
         <h1
           className="text-2xl font-bold mb-4 text-center"
-          style={{ color: branding.primaryColor }}
+          style={{ color: branding.primary_color }}
         >
-          {branding.clientName
-            ? `Deixe sua sugestão para ${branding.clientName}`
+          {branding.client_name
+            ? `Deixe sua sugestão para ${branding.client_name}`
             : "Deixe sua sugestão"}
         </h1>
         <p className="text-gray-600 text-center mb-6">
@@ -114,8 +110,8 @@ export default function QRFeedbackPage({ params }: Props) {
             placeholder="Digite sua sugestão..."
             className="p-3 border rounded-lg h-32 resize-none focus:ring-2"
             style={{
-              borderColor: branding.secondaryColor,
-              outlineColor: branding.secondaryColor,
+              borderColor: branding.secondary_color,
+              outlineColor: branding.secondary_color,
             }}
           />
 
@@ -125,8 +121,8 @@ export default function QRFeedbackPage({ params }: Props) {
             onChange={(e) => setCategory(e.target.value)}
             className="p-3 border rounded-lg focus:ring-2"
             style={{
-              borderColor: branding.secondaryColor,
-              outlineColor: branding.secondaryColor,
+              borderColor: branding.secondary_color,
+              outlineColor: branding.secondary_color,
             }}
           >
             <option value="">Selecione uma categoria (obrigatório)</option>
@@ -136,13 +132,20 @@ export default function QRFeedbackPage({ params }: Props) {
             <option value="infraestrutura">Infraestrutura</option>
           </select>
 
+          {createFeedbackMutation.isError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {createFeedbackMutation.error?.message ||
+                "Erro ao enviar feedback. Tente novamente."}
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={createFeedbackMutation.isPending}
             className="text-white p-3 rounded-lg hover:opacity-90 disabled:opacity-50"
-            style={{ background: branding.secondaryColor }}
+            style={{ background: branding.secondary_color }}
           >
-            {loading ? "Enviando..." : "Enviar"}
+            {createFeedbackMutation.isPending ? "Enviando..." : "Enviar"}
           </button>
         </form>
       </div>

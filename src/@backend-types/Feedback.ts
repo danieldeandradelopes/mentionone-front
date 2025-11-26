@@ -23,6 +23,14 @@ export type FeedbackStoreData = {
   attachments?: string[] | null;
 };
 
+// Tipo para criação via slug (frontend envia slug, backend resolve ID)
+export type FeedbackStoreDataWithSlug = Omit<
+  FeedbackStoreData,
+  "box_id" | "enterprise_id"
+> & {
+  box_slug: string;
+};
+
 export type FeedbackUpdateData = Partial<
   Omit<FeedbackStoreData, "enterprise_id" | "box_id">
 > & { id: number };

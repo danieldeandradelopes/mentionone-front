@@ -1,33 +1,17 @@
 "use client";
-
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import Image from "next/image";
+import { useGetBoxBranding } from "@/hooks/integration/boxes/queries";
 
 type TYProps = {
-  params: Promise<{ boxId: string }>;
+  params: Promise<{ slug: string }>;
 };
 
-interface Branding {
-  primaryColor: string;
-  secondaryColor: string;
-  logoUrl: string;
-  clientName: string;
-}
-
 export function ThankYou({ params }: TYProps) {
-  const { boxId } = use(params);
-  const [branding, setBranding] = useState<Branding | null>(null);
+  const { slug } = use(params);
+  const { data: branding, isLoading, isError } = useGetBoxBranding(slug);
 
-  useEffect(() => {
-    if (boxId) {
-      fetch(`/qr/${boxId}/branding.json`)
-        .then((res) => res.json())
-        .then(setBranding)
-        .catch(() => setBranding(null));
-    }
-  }, [boxId]);
-
-  if (!branding) {
+  if (isLoading) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
         <div className="animate-pulse text-gray-400">
@@ -37,16 +21,29 @@ export function ThankYou({ params }: TYProps) {
     );
   }
 
+  if (isError || !branding) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
+        <h1 className="text-2xl font-bold mb-4 text-center text-red-600">
+          Branding não encontrado!
+        </h1>
+        <p className="text-gray-600 text-center">
+          Não foi possível encontrar a identidade visual para esta caixa.
+        </p>
+      </main>
+    );
+  }
+
   return (
     <main
       className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
-      style={{ background: branding.primaryColor }}
+      style={{ background: branding.primary_color }}
     >
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 border">
-        {branding.logoUrl && (
+        {branding.logo_url && (
           <Image
-            src={branding.logoUrl}
-            alt={branding.clientName}
+            src={branding.logo_url}
+            alt={branding.client_name ?? ""}
             className="mx-auto mb-6 max-h-16"
             style={{ objectFit: "contain" }}
             width={300}
@@ -56,17 +53,17 @@ export function ThankYou({ params }: TYProps) {
         )}
         <h1
           className="text-3xl font-bold mb-4"
-          style={{ color: branding.primaryColor }}
+          style={{ color: branding.primary_color }}
         >
-          Obrigado{branding.clientName && `, ${branding.clientName}`}! 🎉
+          Obrigado{branding.client_name ? `, ${branding.client_name}` : ""}! 🎉
         </h1>
         <p className="text-gray-600 max-w-sm mb-6">
           Sua sugestão foi registrada com sucesso.
         </p>
         <a
-          href={`/qr/${boxId}`}
+          href={`/qr/${slug}`}
           className="underline"
-          style={{ color: branding.secondaryColor }}
+          style={{ color: branding.secondary_color }}
         >
           Enviar outra sugestão
         </a>
