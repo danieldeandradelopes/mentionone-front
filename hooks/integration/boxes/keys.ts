@@ -1,6 +1,7 @@
 export interface CreateBoxData {
   name: string;
   location: string;
+  slug: string;
 }
 
 export interface UpdateBoxData {
