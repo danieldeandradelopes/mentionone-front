@@ -85,3 +85,40 @@ export const useGetReport = (
     enabled,
   });
 };
+
+export interface FeedbackWithDetails extends Feedback {
+  box?: {
+    id: number;
+    name: string;
+    slug: string;
+  } | null;
+  feedbackOption?: {
+    id: number;
+    name: string;
+    slug: string;
+    type: "criticism" | "suggestion" | "praise";
+  } | null;
+}
+
+export const useGetFeedbacksWithFilters = (
+  filters: ReportFilters,
+  enabled: boolean = false
+) => {
+  return useQuery<FeedbackWithDetails[], Error>({
+    queryKey: [...FEEDBACK_KEYS.all(), "filtered", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.boxId) params.append("boxId", filters.boxId);
+      if (filters.category) params.append("category", filters.category);
+      if (filters.startDate) params.append("startDate", filters.startDate);
+      if (filters.endDate) params.append("endDate", filters.endDate);
+
+      const response = await api.get<FeedbackWithDetails[]>({
+        url: `/feedbacks/filtered?${params.toString()}`,
+      });
+      return response;
+    },
+    retry: false,
+    enabled,
+  });
+};

@@ -6,11 +6,14 @@ import { useGetBoxes } from "@/hooks/integration/boxes/queries";
 import {
   ReportFilters,
   useGetReport,
+  useGetFeedbacksWithFilters,
 } from "@/hooks/integration/feedback/queries";
-import { useState } from "react";
+import { useGetFeedbackOptions } from "@/hooks/integration/feedback-options/queries";
+import { useState, useMemo } from "react";
 
 export default function ReportsPage() {
   const { data: boxes = [], isLoading: boxesLoading } = useGetBoxes();
+  const { data: feedbackOptions = [] } = useGetFeedbackOptions();
   const [localFilters, setLocalFilters] = useState({
     boxId: "",
     startDate: "",
@@ -18,7 +21,22 @@ export default function ReportsPage() {
     category: "",
   });
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>({});
-  const [shouldFetch, setShouldFetch] = useState(false);
+  // Inicia como true para carregar automaticamente todos os feedbacks quando não há filtros
+  const [shouldFetch, setShouldFetch] = useState(true);
+
+  // Remove duplicatas de opções de feedback (mesmo slug) e ordena por nome
+  const uniqueFeedbackOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return feedbackOptions
+      .filter((option) => {
+        if (seen.has(option.slug)) {
+          return false;
+        }
+        seen.add(option.slug);
+        return true;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [feedbackOptions]);
 
   const {
     data: report,
@@ -26,7 +44,10 @@ export default function ReportsPage() {
     error: reportError,
   } = useGetReport(appliedFilters, shouldFetch);
 
-  const loading = boxesLoading || reportLoading;
+  const { data: feedbacks = [], isLoading: feedbacksLoading } =
+    useGetFeedbacksWithFilters(appliedFilters, shouldFetch);
+
+  const loading = boxesLoading || reportLoading || feedbacksLoading;
   const error = reportError?.message || null;
 
   function loadReport() {
@@ -88,15 +109,26 @@ export default function ReportsPage() {
           />
 
           {/* Categoria */}
-          <input
-            type="text"
+          <select
             className="border p-2 rounded"
-            placeholder="Categoria"
             value={localFilters.category}
             onChange={(e) =>
               setLocalFilters({ ...localFilters, category: e.target.value })
             }
-          />
+          >
+            <option value="">Todas as categorias</option>
+            {uniqueFeedbackOptions.map((option) => (
+              <option key={option.id} value={option.slug}>
+                {option.name} (
+                {option.type === "criticism"
+                  ? "Crítica"
+                  : option.type === "suggestion"
+                  ? "Sugestão"
+                  : "Elogio"}
+                )
+              </option>
+            ))}
+          </select>
         </div>
 
         <Button onClick={loadReport} disabled={loading}>
@@ -193,6 +225,119 @@ export default function ReportsPage() {
           )}
         </Card>
       )}
+
+      {/* --------------------  CARDS DE FEEDBACKS  --------------------  */}
+      {(shouldFetch || Object.keys(appliedFilters).length === 0) &&
+        feedbacks.length > 0 && (
+          <Card className="p-4 space-y-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Feedbacks ({feedbacks.length})
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {feedbacks.map((feedback) => (
+                <Card
+                  key={feedback.id}
+                  className="p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                >
+                  <div className="space-y-3">
+                    {/* Header com Box e Tipo */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        {feedback.box && (
+                          <div className="text-sm font-medium text-gray-700">
+                            {feedback.box.name}
+                          </div>
+                        )}
+                        {feedback.feedbackOption && (
+                          <div className="flex items-center gap-2 mt-1">
+                            <span
+                              className={`text-xs px-2 py-1 rounded ${
+                                feedback.feedbackOption.type === "criticism"
+                                  ? "bg-red-100 text-red-700"
+                                  : feedback.feedbackOption.type ===
+                                    "suggestion"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-green-100 text-green-700"
+                              }`}
+                            >
+                              {feedback.feedbackOption.type === "criticism"
+                                ? "Crítica"
+                                : feedback.feedbackOption.type === "suggestion"
+                                ? "Sugestão"
+                                : "Elogio"}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {feedback.feedbackOption.name}
+                            </span>
+                          </div>
+                        )}
+                        {!feedback.feedbackOption && feedback.category && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {feedback.category}
+                          </div>
+                        )}
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          feedback.status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : feedback.status === "resolved"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {feedback.status === "pending"
+                          ? "Pendente"
+                          : feedback.status === "resolved"
+                          ? "Resolvido"
+                          : feedback.status}
+                      </span>
+                    </div>
+
+                    {/* Texto do Feedback */}
+                    <p className="text-sm text-gray-700 line-clamp-3">
+                      {feedback.text}
+                    </p>
+
+                    {/* Data */}
+                    {feedback.created_at && (
+                      <div className="text-xs text-gray-500">
+                        {new Date(feedback.created_at).toLocaleDateString(
+                          "pt-BR",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                      </div>
+                    )}
+
+                    {/* Rating */}
+                    {feedback.rating && (
+                      <div className="text-sm text-gray-600">
+                        ⭐ {feedback.rating}/5
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </Card>
+        )}
+
+      {(shouldFetch || Object.keys(appliedFilters).length === 0) &&
+        feedbacks.length === 0 &&
+        report &&
+        report.totalFeedbacks === 0 && (
+          <Card className="p-4">
+            <div className="text-center py-8 text-gray-500">
+              Nenhum feedback encontrado com os filtros aplicados.
+            </div>
+          </Card>
+        )}
     </div>
   );
 }
