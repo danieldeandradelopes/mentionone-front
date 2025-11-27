@@ -7,12 +7,7 @@ export interface EnterpriseAuthentication {
   cover?: string;
   address?: string;
   description?: string;
-  status_payment?: string;
-  specialties?: string;
-  bio?: string;
   phones?: Phone[];
-  latitude?: number;
-  longitude?: number;
   created_at?: Date;
   updated_at?: Date;
 }

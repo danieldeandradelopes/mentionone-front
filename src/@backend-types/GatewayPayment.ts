@@ -1,15 +1,5 @@
+import { Items } from "mercadopago/dist/clients/commonTypes";
 import Payment from "./Payment";
-
-// Interface local para substituir o tipo do mercadopago
-export interface Items {
-  id?: string;
-  title?: string;
-  description?: string;
-  picture_url?: string;
-  category_id?: string;
-  quantity?: number;
-  unit_price?: number;
-}
 
 export interface ItemsPayment extends Items {
   quantity: number;
