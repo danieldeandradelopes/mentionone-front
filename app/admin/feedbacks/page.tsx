@@ -53,23 +53,33 @@ export default function FeedbackListPage() {
 
         {feedbacks?.map((fb) => {
           const isResolved = fb.status === "resolved";
-          const isPending = fb.status === "pending";
 
           return (
             <div
               key={fb.id}
-              className={`p-4 rounded-xl shadow border transition-colors ${
-                isResolved
-                  ? "bg-green-50 border-green-200"
-                  : isPending
-                  ? "bg-yellow-50 border-yellow-200"
-                  : "bg-white border-gray-100"
-              }`}
+              className="p-4 bg-white rounded-xl shadow border border-gray-100"
             >
-              {/* Category */}
-              <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-xs rounded-full mb-2">
-                {fb.category}
-              </span>
+              {/* Header com Category e Status */}
+              <div className="flex items-start justify-between mb-2">
+                <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-xs rounded-full">
+                  {fb.category}
+                </span>
+                <span
+                  className={`text-xs px-2 py-1 rounded ${
+                    fb.status === "pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : fb.status === "resolved"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {fb.status === "pending"
+                    ? "Pendente"
+                    : fb.status === "resolved"
+                    ? "Resolvido"
+                    : fb.status}
+                </span>
+              </div>
 
               {/* Text */}
               {fb.text ? (
