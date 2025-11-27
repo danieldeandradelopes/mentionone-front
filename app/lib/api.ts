@@ -10,5 +10,5 @@ export function getApiUrl(): string {
   }
 
   // Produção padrão
-  return "https://api.agende7.com";
+  return "https://mentionone-api.vercel.app/";
 }
