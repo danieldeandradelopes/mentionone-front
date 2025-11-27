@@ -47,14 +47,14 @@ export const useGetBoxBySlug = (slug: string) => {
   });
 };
 
-// Hook para buscar o branding de uma box pelo slug
+// Hook para buscar o branding de uma box pelo slug (rota pública)
 
 export const useGetBoxBranding = (slug: string) => {
   return useQuery<BoxBranding | null, Error>({
     queryKey: BOXES_KEYS.detailBySlug(slug),
     queryFn: async () => {
       const response = await api.get<BoxBranding>({
-        url: `/boxes/slug/${slug}`,
+        url: `/boxes/slug/${slug}/branding`,
       });
       return response;
     },

@@ -9,7 +9,7 @@ export const useCreateFeedback = () => {
   return useMutation<Feedback, Error, FeedbackStoreDataWithSlug>({
     mutationFn: async (data) => {
       const response = await api.post<Feedback>({
-        url: "/feedbacks",
+        url: "/customers/feedbacks",
         data,
       });
       return response;

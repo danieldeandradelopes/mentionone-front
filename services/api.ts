@@ -22,7 +22,14 @@ function getAuthToken(): string | null {
 }
 
 // Rotas públicas que não precisam de token
-const PUBLIC_ROUTES = ["/login", "/login/superadmin", "/refresh-token"];
+const PUBLIC_ROUTES = [
+  "/login",
+  "/login/superadmin",
+  "/refresh-token",
+  "/boxes/slug/:slug/branding",
+  "/boxes/slug/:slug",
+  "/customers/feedbacks",
+];
 
 function shouldAddAuthHeader(url: string): boolean {
   return !PUBLIC_ROUTES.some((route) => url.includes(route));

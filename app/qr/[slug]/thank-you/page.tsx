@@ -46,8 +46,8 @@ export function ThankYou({ params }: TYProps) {
             alt={branding.client_name ?? ""}
             className="mx-auto mb-6 max-h-16"
             style={{ objectFit: "contain" }}
-            width={300}
-            height={64}
+            width={400}
+            height={100}
             priority={true}
           />
         )}
