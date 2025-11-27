@@ -29,6 +29,8 @@ const PUBLIC_ROUTES = [
   "/boxes/slug/:slug/branding",
   "/boxes/slug/:slug",
   "/customers/feedbacks",
+  "/feedback-options/slug/:slug",
+  "/customers/feedback-options/box/slug/:slug",
 ];
 
 function shouldAddAuthHeader(url: string): boolean {

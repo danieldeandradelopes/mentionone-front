@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import { useCreateBox } from "@/hooks/integration/boxes/mutations";
 import { useCreateBoxBranding } from "@/hooks/integration/boxes/branding-mutations";
 import { useUploadFile } from "@/hooks/integration/upload/upload-file";
+import {
+  useCreateFeedbackOption,
+  FeedbackOptionData,
+} from "@/hooks/integration/feedback-options/mutations";
 import Image from "next/image";
 import notify from "@/utils/notify";
 import { BoxesStoreData } from "@/@backend-types/Boxes";
+import { Trash2, Plus } from "lucide-react";
 
 export default function NewBoxPage() {
   const router = useRouter();
@@ -21,9 +26,19 @@ export default function NewBoxPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Estados para opções de feedback
+  const [feedbackOptions, setFeedbackOptions] = useState<
+    Array<FeedbackOptionData & { tempId?: string }>
+  >([]);
+  const [newOptionName, setNewOptionName] = useState("");
+  const [newOptionType, setNewOptionType] = useState<
+    "criticism" | "suggestion" | "praise"
+  >("suggestion");
+
   const createBoxMutation = useCreateBox();
   const createBrandingMutation = useCreateBoxBranding();
   const uploadFileMutation = useUploadFile();
+  const createFeedbackOptionMutation = useCreateFeedbackOption();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,6 +49,44 @@ export default function NewBoxPage() {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddOption = () => {
+    if (!newOptionName.trim()) {
+      notify("Nome da opção é obrigatório", "error");
+      return;
+    }
+
+    const existingOption = feedbackOptions.find(
+      (opt) =>
+        opt.name.toLowerCase().trim() === newOptionName.toLowerCase().trim()
+    );
+
+    if (existingOption) {
+      notify("Já existe uma opção com este nome", "error");
+      return;
+    }
+
+    setFeedbackOptions([
+      ...feedbackOptions,
+      {
+        name: newOptionName.trim(),
+        type: newOptionType,
+        tempId: Date.now().toString(),
+      },
+    ]);
+    setNewOptionName("");
+    setNewOptionType("suggestion");
+  };
+
+  const handleRemoveOption = (tempId?: string, index?: number) => {
+    if (tempId) {
+      setFeedbackOptions(
+        feedbackOptions.filter((opt) => opt.tempId !== tempId)
+      );
+    } else if (index !== undefined) {
+      setFeedbackOptions(feedbackOptions.filter((_, i) => i !== index));
     }
   };
 
@@ -66,6 +119,15 @@ export default function NewBoxPage() {
         client_name: clientName || undefined,
       });
 
+      // Criar opções de feedback
+      for (const option of feedbackOptions) {
+        await createFeedbackOptionMutation.mutateAsync({
+          name: option.name,
+          type: option.type,
+          box_id: box.id,
+        });
+      }
+
       notify("Caixa criada com sucesso!", "success");
 
       // Redireciona para a lista após criar tudo
@@ -79,7 +141,8 @@ export default function NewBoxPage() {
   const isLoading =
     createBoxMutation.isPending ||
     createBrandingMutation.isPending ||
-    uploadFileMutation.isPending;
+    uploadFileMutation.isPending ||
+    createFeedbackOptionMutation.isPending;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -266,6 +329,99 @@ export default function NewBoxPage() {
               className="w-full border p-3 rounded-lg"
             />
           </div>
+        </div>
+
+        {/* Opções de Feedback */}
+        <div className="space-y-4 border-t pt-6">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Opções de Feedback
+          </h2>
+
+          {/* Adicionar nova opção */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nome da opção (ex: Atendimento, Produto, etc.)"
+                value={newOptionName}
+                onChange={(e) => setNewOptionName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddOption();
+                  }
+                }}
+                className="flex-1 border p-3 rounded-lg"
+              />
+              <select
+                value={newOptionType}
+                onChange={(e) =>
+                  setNewOptionType(
+                    e.target.value as "criticism" | "suggestion" | "praise"
+                  )
+                }
+                className="border p-3 rounded-lg min-w-[150px]"
+              >
+                <option value="criticism">Crítica</option>
+                <option value="suggestion">Sugestão</option>
+                <option value="praise">Elogio</option>
+              </select>
+              <button
+                type="button"
+                onClick={handleAddOption}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 whitespace-nowrap"
+              >
+                <Plus size={18} />
+                Adicionar
+              </button>
+            </div>
+            <small className="text-xs text-gray-500">
+              O slug será gerado automaticamente a partir do nome. Não é
+              possível ter duas opções com o mesmo nome.
+            </small>
+          </div>
+
+          {/* Lista de opções */}
+          {feedbackOptions.length > 0 && (
+            <div className="space-y-2">
+              {feedbackOptions.map((option, index) => (
+                <div
+                  key={option.tempId || index}
+                  className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+                >
+                  <div className="flex-1">
+                    <span className="font-medium text-gray-800">
+                      {option.name}
+                    </span>
+                    <span className="ml-2 text-xs text-gray-500">
+                      (
+                      {option.type === "criticism"
+                        ? "Crítica"
+                        : option.type === "suggestion"
+                        ? "Sugestão"
+                        : "Elogio"}
+                      )
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOption(option.tempId, index)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    title="Remover opção"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {feedbackOptions.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-4">
+              Nenhuma opção adicionada. Adicione opções de feedback que os
+              usuários poderão selecionar.
+            </p>
+          )}
         </div>
 
         {/* Erros */}

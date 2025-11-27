@@ -1,6 +1,7 @@
 "use client";
 import { useGetBoxBranding } from "@/hooks/integration/boxes/queries";
 import { useCreateFeedback } from "@/hooks/integration/feedback/mutations";
+import { useGetFeedbackOptionsByBoxSlug } from "@/hooks/integration/feedback-options/queries";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -18,6 +19,10 @@ export default function QRFeedbackPage({ params }: Props) {
   // Busca o branding pelo slug do box
   const { data: branding, isLoading, isError, error } = useGetBoxBranding(slug);
 
+  // Busca as opções de feedback desta box
+  const { data: feedbackOptions = [], isLoading: optionsLoading } =
+    useGetFeedbackOptionsByBoxSlug(slug);
+
   // Hook para criar feedback
   const createFeedbackMutation = useCreateFeedback();
 
@@ -34,7 +39,7 @@ export default function QRFeedbackPage({ params }: Props) {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || optionsLoading) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
         <div className="animate-pulse text-gray-400">
@@ -125,11 +130,27 @@ export default function QRFeedbackPage({ params }: Props) {
               outlineColor: branding.secondary_color,
             }}
           >
-            <option value="">Selecione uma categoria (obrigatório)</option>
-            <option value="servico">Serviço</option>
-            <option value="limpeza">Limpeza</option>
-            <option value="atendimento">Atendimento</option>
-            <option value="infraestrutura">Infraestrutura</option>
+            <option value="">Selecione uma opção (obrigatório)</option>
+            {feedbackOptions.length > 0 ? (
+              feedbackOptions.map((option) => (
+                <option key={option.id} value={option.slug}>
+                  {option.name} (
+                  {option.type === "criticism"
+                    ? "Crítica"
+                    : option.type === "suggestion"
+                    ? "Sugestão"
+                    : "Elogio"}
+                  )
+                </option>
+              ))
+            ) : (
+              <>
+                <option value="servico">Serviço</option>
+                <option value="limpeza">Limpeza</option>
+                <option value="atendimento">Atendimento</option>
+                <option value="infraestrutura">Infraestrutura</option>
+              </>
+            )}
           </select>
 
           {createFeedbackMutation.isError && (
