@@ -89,17 +89,14 @@ export default function QRFeedbackPage({ params }: Props) {
           <Image
             src={branding.logo_url}
             alt={branding.client_name ?? ""}
-            className="mx-auto mb-6 max-h-16"
+            className="mx-auto mb-6 rounded-lg"
             style={{ objectFit: "contain" }}
-            width={400}
+            width={148}
             height={100}
             priority={true}
           />
         )}
-        <h1
-          className="text-2xl font-bold mb-4 text-center"
-          style={{ color: branding.primary_color }}
-        >
+        <h1 className="text-2xl font-bold mb-4 text-center">
           {branding.client_name
             ? `Deixe sua sugestão para ${branding.client_name}`
             : "Deixe sua sugestão"}
@@ -115,7 +112,6 @@ export default function QRFeedbackPage({ params }: Props) {
             placeholder="Digite sua sugestão..."
             className="p-3 border rounded-lg h-32 resize-none focus:ring-2"
             style={{
-              borderColor: branding.secondary_color,
               outlineColor: branding.secondary_color,
             }}
           />
@@ -126,7 +122,6 @@ export default function QRFeedbackPage({ params }: Props) {
             onChange={(e) => setCategory(e.target.value)}
             className="p-3 border rounded-lg focus:ring-2"
             style={{
-              borderColor: branding.secondary_color,
               outlineColor: branding.secondary_color,
             }}
           >

@@ -44,17 +44,14 @@ export function ThankYou({ params }: TYProps) {
           <Image
             src={branding.logo_url}
             alt={branding.client_name ?? ""}
-            className="mx-auto mb-6 max-h-16"
+            className="mx-auto mb-6 rounded-lg"
             style={{ objectFit: "contain" }}
-            width={400}
+            width={148}
             height={100}
             priority={true}
           />
         )}
-        <h1
-          className="text-3xl font-bold mb-4"
-          style={{ color: branding.primary_color }}
-        >
+        <h1 className="text-3xl font-bold mb-4">
           Obrigado{branding.client_name ? `, ${branding.client_name}` : ""}! 🎉
         </h1>
         <p className="text-gray-600 max-w-sm mb-6">
