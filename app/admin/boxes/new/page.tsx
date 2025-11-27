@@ -22,7 +22,7 @@ export default function NewBoxPage() {
   const [primaryColor, setPrimaryColor] = useState("#3B82F6");
   const [secondaryColor, setSecondaryColor] = useState("#1E40AF");
   const [clientName, setClientName] = useState("");
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [uploadedLogoUrl, setUploadedLogoUrl] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -40,15 +40,27 @@ export default function NewBoxPage() {
   const uploadFileMutation = useUploadFile();
   const createFeedbackOptionMutation = useCreateFeedbackOption();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setLogoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Upload automático assim que a imagem for anexada
+      try {
+        const uploadedFile = await uploadFileMutation.mutateAsync(file);
+        setUploadedLogoUrl(uploadedFile.path);
+        notify("Imagem enviada com sucesso!", "success");
+      } catch (error) {
+        console.error(error);
+        notify("Erro ao enviar imagem", "error");
+        // Limpar o preview em caso de erro
+        setLogoPreview(null);
+        setUploadedLogoUrl(null);
+      }
     }
   };
 
@@ -103,12 +115,8 @@ export default function NewBoxPage() {
         enterprise_id: 0, // Será ignorado pelo backend, que usa o middleware
       } as BoxesStoreData);
 
-      // Upload da imagem se houver
-      let logoUrl: string | undefined;
-      if (logoFile) {
-        const uploadedFile = await uploadFileMutation.mutateAsync(logoFile);
-        logoUrl = uploadedFile.path;
-      }
+      // Usar a URL já enviada
+      const logoUrl: string | undefined = uploadedLogoUrl || undefined;
 
       // Criar o branding
       await createBrandingMutation.mutateAsync({
@@ -144,6 +152,12 @@ export default function NewBoxPage() {
     uploadFileMutation.isPending ||
     createFeedbackOptionMutation.isPending;
 
+  const getSubmitButtonText = () => {
+    if (uploadFileMutation.isPending) return "Enviando imagem...";
+    if (isLoading) return "Criando...";
+    return "Criar Caixa";
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Preview do Logo no topo */}
@@ -171,9 +185,10 @@ export default function NewBoxPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm text-gray-700"
+                disabled={uploadFileMutation.isPending}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Trocar imagem
+                {uploadFileMutation.isPending ? "Enviando..." : "Trocar imagem"}
               </button>
             </div>
           ) : (
@@ -196,9 +211,12 @@ export default function NewBoxPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm text-gray-700"
+                disabled={uploadFileMutation.isPending}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 text-sm text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Selecionar logo
+                {uploadFileMutation.isPending
+                  ? "Enviando..."
+                  : "Selecionar logo"}
               </button>
             </div>
           )}
@@ -442,7 +460,7 @@ export default function NewBoxPage() {
           disabled={isLoading}
           className="w-full bg-indigo-600 text-white p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-700"
         >
-          {isLoading ? "Criando..." : "Criar Caixa"}
+          {getSubmitButtonText()}
         </button>
       </form>
     </div>

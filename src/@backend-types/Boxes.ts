@@ -4,6 +4,7 @@ export interface BoxesProps {
   name: string;
   location: string;
   slug: string;
+  image_url?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -13,12 +14,14 @@ export type BoxesStoreData = {
   name: string;
   location: string;
   slug: string;
+  image_url?: string;
 };
 
 export type BoxesUpdateData = Partial<{
   name: string;
   location: string;
   slug: string;
+  image_url?: string;
 }> & { id: number };
 
 export default class Boxes {
@@ -27,6 +30,7 @@ export default class Boxes {
   readonly name: string;
   readonly location: string;
   readonly slug: string;
+  readonly image_url?: string;
   readonly created_at?: string;
   readonly updated_at?: string;
 
@@ -36,6 +40,7 @@ export default class Boxes {
     this.name = props.name;
     this.location = props.location;
     this.slug = props.slug;
+    this.image_url = props.image_url;
     this.created_at = props.created_at;
     this.updated_at = props.updated_at;
   }
