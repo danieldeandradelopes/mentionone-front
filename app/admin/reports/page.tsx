@@ -8,8 +8,10 @@ import {
   useGetReport,
   useGetFeedbacksWithFilters,
 } from "@/hooks/integration/feedback/queries";
+import { useUpdateFeedback } from "@/hooks/integration/feedback/mutations";
 import { useGetFeedbackOptions } from "@/hooks/integration/feedback-options/queries";
 import { useState, useMemo } from "react";
+import { CheckCircle2, Clock } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -62,8 +64,25 @@ export default function ReportsPage() {
   const { data: feedbacks = [], isLoading: feedbacksLoading } =
     useGetFeedbacksWithFilters(appliedFilters, shouldFetch);
 
+  const updateFeedbackMutation = useUpdateFeedback();
+
   const loading = boxesLoading || reportLoading || feedbacksLoading;
   const error = reportError?.message || null;
+
+  const handleToggleStatus = async (
+    feedbackId: number,
+    currentStatus: string
+  ) => {
+    const newStatus = currentStatus === "resolved" ? "pending" : "resolved";
+    try {
+      await updateFeedbackMutation.mutateAsync({
+        id: feedbackId,
+        data: { status: newStatus },
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+    }
+  };
 
   // Dados para gráficos
   const chartData = useMemo(() => {
@@ -405,6 +424,33 @@ export default function ReportsPage() {
                             ⭐ {feedback.rating}/5
                           </div>
                         )}
+
+                        {/* Botões de ação */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-200">
+                          {feedback.status === "resolved" ? (
+                            <button
+                              onClick={() =>
+                                handleToggleStatus(feedback.id, feedback.status)
+                              }
+                              disabled={updateFeedbackMutation.isPending}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-lg hover:bg-yellow-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Clock size={14} />
+                              Marcar como Pendente
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleToggleStatus(feedback.id, feedback.status)
+                              }
+                              disabled={updateFeedbackMutation.isPending}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <CheckCircle2 size={14} />
+                              Marcar como Concluído
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </Card>
                   ))}
