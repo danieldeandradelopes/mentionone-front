@@ -1,24 +1,41 @@
-// app/admin/dashboard/page.tsx
-import Feedback from "@/app/entities/Feedback";
-import { getAllBoxes } from "@/app/lib/boxes";
-import { getAllFeedbacks } from "@/app/lib/feedback";
-import { isAuthenticated } from "@/app/lib/auth-actions";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function DashboardPage() {
-  // Verifica autenticação antes de renderizar
-  const authenticated = await isAuthenticated();
-  if (!authenticated) {
-    redirect("/login");
-  }
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useGetFeedbacks } from "@/hooks/integration/feedback/queries";
+import { useGetBoxes } from "@/hooks/integration/boxes/queries";
+import { useAuth } from "@/hooks/utils/use-auth";
+import Feedback from "@/@backend-types/Feedback";
 
-  const feedbacks = await getAllFeedbacks();
-  const boxes = await getAllBoxes();
+export default function DashboardPage() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { data: feedbacks = [], isLoading: loadingFeedbacks } =
+    useGetFeedbacks();
+  const { data: boxes = [], isLoading: loadingBoxes } = useGetBoxes();
+
+  // Verifica autenticação no cliente
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
+
+  const isLoading = loadingFeedbacks || loadingBoxes;
+
+  // Ordena feedbacks por data (mais recente primeiro)
+  const sortedFeedbacks = [...feedbacks].sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
 
   // --- Métricas ---
   const total = feedbacks.length;
 
-  const lastFeedback = feedbacks[0] ? new Date(feedbacks[0].createdAt) : null;
+  const lastFeedback = sortedFeedbacks[0]?.created_at
+    ? new Date(sortedFeedbacks[0].created_at)
+    : null;
 
   const feedbacksByCategory = feedbacks.reduce(
     (acc: Record<string, number>, fb: Feedback) => {
@@ -36,12 +53,24 @@ export default async function DashboardPage() {
     const dayStr = date.toISOString().split("T")[0];
 
     const count = feedbacks.filter((fb) => {
-      const fbDate = new Date(fb.createdAt).toISOString().split("T")[0];
+      if (!fb.created_at) return false;
+      const fbDate = new Date(fb.created_at).toISOString().split("T")[0];
       return fbDate === dayStr;
     }).length;
 
     return { date: dayStr, count };
   });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-10 pb-10">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="text-gray-500 text-center py-8">
+          Carregando dados...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-10 pb-10">
@@ -55,7 +84,17 @@ export default async function DashboardPage() {
         <Card title="Feedbacks/dia (7 dias)" value={(total / 7).toFixed(1)} />
         <Card
           title="Último feedback"
-          value={lastFeedback ? lastFeedback.toLocaleString("pt-BR") : "Nenhum"}
+          value={
+            lastFeedback
+              ? lastFeedback.toLocaleString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "Nenhum"
+          }
         />
       </div>
 
@@ -104,7 +143,7 @@ export default async function DashboardPage() {
         <h2 className="text-lg font-semibold mb-2">Últimos feedbacks</h2>
 
         <div className="space-y-3">
-          {feedbacks.slice(0, 5).map((fb) => (
+          {sortedFeedbacks.slice(0, 5).map((fb) => (
             <div
               key={fb.id}
               className="p-4 bg-white shadow rounded-xl border border-gray-100"
@@ -114,13 +153,20 @@ export default async function DashboardPage() {
                   {fb.category}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {new Date(fb.createdAt).toLocaleString("pt-BR")}
+                  {fb.created_at
+                    ? new Date(fb.created_at).toLocaleString("pt-BR")
+                    : "Data não disponível"}
                 </span>
               </div>
 
-              <p className="mt-2 text-gray-700">{fb.text}</p>
+              <p className="mt-2 text-gray-700">{fb.text || "Sem texto"}</p>
             </div>
           ))}
+          {sortedFeedbacks.length === 0 && (
+            <p className="text-gray-500 text-center py-4">
+              Nenhum feedback encontrado.
+            </p>
+          )}
         </div>
       </section>
     </div>
