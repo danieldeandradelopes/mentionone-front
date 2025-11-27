@@ -62,3 +62,34 @@ export const useGetBoxBranding = (slug: string) => {
     enabled: !!slug,
   });
 };
+
+// Hook para buscar branding por box ID (autenticado)
+export const useGetBoxBrandingById = (boxId: number) => {
+  return useQuery<BoxBranding | null, Error>({
+    queryKey: [...BOXES_KEYS.detail(boxId), "branding"],
+    queryFn: async () => {
+      try {
+        const response = await api.get<BoxBranding>({
+          url: `/boxes/${boxId}/branding`,
+        });
+        return response;
+      } catch (error) {
+        // Se não encontrar branding (404), retorna null em vez de lançar erro
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        // Verifica se é um erro 404 ou se contém mensagem de "não encontrado"
+        if (
+          errorMessage.includes("404") ||
+          errorMessage.includes("not found") ||
+          errorMessage.includes("Branding não encontrado") ||
+          errorMessage.includes("Erro na requisição: 404")
+        ) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    retry: false,
+    enabled: !!boxId,
+  });
+};

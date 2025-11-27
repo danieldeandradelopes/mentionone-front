@@ -3,7 +3,7 @@
 import { useDeleteBox } from "@/hooks/integration/boxes/mutations";
 import { useGetBoxes } from "@/hooks/integration/boxes/queries";
 import Boxes from "@/@backend-types/Boxes";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, QrCode } from "lucide-react";
 import Link from "next/link";
 export default function BoxesList() {
   const { data: boxes = [], isLoading, error } = useGetBoxes();
@@ -54,6 +54,13 @@ export default function BoxesList() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href={`/admin/boxes/${box.id}/qrcode`}
+              className="text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1"
+            >
+              <QrCode size={16} />
+              Ver QR Code
+            </Link>
             <Link
               href={`/admin/boxes/${box.id}/edit`}
               className="text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1"
