@@ -1,12 +1,15 @@
 import { useAuth } from "@/hooks/utils/use-auth";
+import { useSubscription } from "@/hooks/utils/use-subscription";
 import { api } from "@/services/api";
 import { useMutation } from "@tanstack/react-query";
 import { AUTH_KEYS, LoginCredentials } from "./keys";
 import Authentication from "@/@backend-types/Authentication";
 import { defaultEnterprise } from "@/hooks/utils/use-auth";
+import { SubscriptionValidateResponse } from "@/@backend-types/Subscription";
 
 export const useLogin = () => {
   const { login } = useAuth();
+  const { setSubscription } = useSubscription();
 
   return useMutation<Authentication, Error, LoginCredentials>({
     mutationFn: async (credentials) => {
@@ -23,8 +26,18 @@ export const useLogin = () => {
       await login(
         response.token,
         response.user,
-        response.Enterprise || defaultEnterprise
+        response.Enterprise || defaultEnterprise,
       );
+
+      // Busca e salva a assinatura antes do redirect (evita flash bloqueado)
+      try {
+        const subscription = await api.get<SubscriptionValidateResponse>({
+          url: "/subscription/validate-status",
+        });
+        setSubscription(subscription);
+      } catch (error) {
+        console.error("Erro ao validar assinatura no login:", error);
+      }
 
       return response;
     },

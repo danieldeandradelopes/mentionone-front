@@ -34,9 +34,7 @@ export default function DashboardPage() {
 
   // Verificar se feedbacks retornaram com paginação (limite atingido)
   const feedbacksData = useMemo(() => {
-    return Array.isArray(feedbacks)
-      ? feedbacks
-      : feedbacks?.feedbacks || [];
+    return Array.isArray(feedbacks) ? feedbacks : feedbacks?.feedbacks || [];
   }, [feedbacks]);
 
   const pagination = useMemo(() => {
@@ -71,7 +69,7 @@ export default function DashboardPage() {
       acc[fb.category] = (acc[fb.category] || 0) + 1;
       return acc;
     },
-    {}
+    {},
   );
 
   // Volume por dia (últimos 7 dias) - formatado para gráfico
@@ -252,7 +250,9 @@ export default function DashboardPage() {
       {/* GRÁFICO DE BARRAS - Por Categoria (bloqueado no free) */}
       {canAccessAdvancedCharts ? (
         <section className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Feedbacks por Categoria</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Feedbacks por Categoria
+          </h2>
           {categoryChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={categoryChartData}>

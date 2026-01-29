@@ -10,7 +10,14 @@ export function usePlanFeatures() {
    * Verifica se uma feature está disponível
    */
   const hasFeature = (
-    key: keyof Pick<PlanFeatures, "can_access_reports" | "can_access_advanced_charts" | "can_filter_feedbacks" | "can_export_csv" | "show_mentionone_branding">
+    key: keyof Pick<
+      PlanFeatures,
+      | "can_access_reports"
+      | "can_access_advanced_charts"
+      | "can_filter_feedbacks"
+      | "can_export_csv"
+      | "show_mentionone_branding"
+    >,
   ): boolean => {
     if (!features) {
       // Sem subscription = plano Free
@@ -27,8 +34,10 @@ export function usePlanFeatures() {
   /**
    * Obtém o valor de uma feature numérica
    */
-  const getFeatureValue = <K extends keyof Pick<PlanFeatures, "max_boxes" | "max_responses_per_month">>(
-    key: K
+  const getFeatureValue = <
+    K extends keyof Pick<PlanFeatures, "max_boxes" | "max_responses_per_month">,
+  >(
+    key: K,
   ): PlanFeatures[K] | null => {
     if (!features) {
       // Sem subscription = plano Free
@@ -83,4 +92,3 @@ export function usePlanFeatures() {
     getMaxResponsesPerMonth,
   };
 }
-
