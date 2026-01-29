@@ -1,22 +1,24 @@
 // app/admin/boxes/page.tsx
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import BoxesList from "./BoxesList";
 import { useGetBoxes } from "@/hooks/integration/boxes/queries";
 import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
 import UpgradeBanner from "@/components/UpgradeBanner";
 
-export default function BoxesPage() {
+function BoxesHeaderClient() {
   const { data: boxes = [] } = useGetBoxes();
   const { hasBoxLimit, getMaxBoxes } = usePlanFeatures();
 
   const maxBoxes = getMaxBoxes();
   const currentBoxes = boxes.length;
-  const canCreateMore = !hasBoxLimit() || (maxBoxes !== null && currentBoxes < maxBoxes);
+  const canCreateMore =
+    !hasBoxLimit() || (maxBoxes !== null && currentBoxes < maxBoxes);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Caixas</h1>
@@ -48,7 +50,18 @@ export default function BoxesPage() {
           message={`Você atingiu o limite de ${maxBoxes} caixa(s) do seu plano. Faça upgrade para criar mais caixas.`}
         />
       )}
+    </>
+  );
+}
 
+const BoxesHeader = dynamic(() => Promise.resolve(BoxesHeaderClient), {
+  ssr: false,
+});
+
+export default function BoxesPage() {
+  return (
+    <div className="max-w-3xl mx-auto">
+      <BoxesHeader />
       <BoxesList />
     </div>
   );
