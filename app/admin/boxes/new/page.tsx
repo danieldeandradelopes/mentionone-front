@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateBox } from "@/hooks/integration/boxes/mutations";
+import { useGetBoxes } from "@/hooks/integration/boxes/queries";
+import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
 import { useCreateBoxBranding } from "@/hooks/integration/boxes/branding-mutations";
 import { useUploadFile } from "@/hooks/integration/upload/upload-file";
 import {
@@ -16,6 +18,20 @@ import { Trash2, Plus } from "lucide-react";
 
 export default function NewBoxPage() {
   const router = useRouter();
+  const { data: boxes = [] } = useGetBoxes();
+  const { hasBoxLimit, getMaxBoxes } = usePlanFeatures();
+
+  const maxBoxes = getMaxBoxes();
+  const currentBoxes = boxes.length;
+  const canCreateMore = !hasBoxLimit() || (maxBoxes !== null && currentBoxes < maxBoxes);
+
+  // Redirecionar se não pode criar mais
+  useEffect(() => {
+    if (!canCreateMore) {
+      router.push("/admin/boxes");
+    }
+  }, [canCreateMore, router]);
+
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [slug, setSlug] = useState("");
@@ -160,11 +176,20 @@ export default function NewBoxPage() {
     return "Criar Caixa";
   };
 
+  if (!canCreateMore) {
+    return null; // Será redirecionado
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       {/* Preview do Logo no topo */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-4">Criar nova caixa</h1>
+        {hasBoxLimit() && maxBoxes !== null && (
+          <p className="text-sm text-gray-500 mb-4">
+            {currentBoxes} de {maxBoxes} caixas utilizadas
+          </p>
+        )}
         <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
           <input
             ref={fileInputRef}

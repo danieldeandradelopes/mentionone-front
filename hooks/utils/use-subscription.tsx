@@ -14,6 +14,7 @@ export function useSubscription() {
         plan_name: "",
         plan_description: "",
         plan_price: "",
+        features: null,
       }
     );
 

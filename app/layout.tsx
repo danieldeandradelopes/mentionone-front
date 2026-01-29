@@ -13,6 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      </head>
       <body>
         <Providers>
           <LayoutWrapper>{children}</LayoutWrapper>

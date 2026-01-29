@@ -1,3 +1,5 @@
+import { PlanFeatures } from "./Plan";
+
 export type SubscriptionStatus = "active" | "past_due" | "canceled";
 
 export interface SubscriptionValidateResponse {
@@ -7,6 +9,7 @@ export interface SubscriptionValidateResponse {
   plan_name: string;
   plan_description: string;
   plan_price: string;
+  features: PlanFeatures | null;
 }
 
 export interface SubscriptionProps {

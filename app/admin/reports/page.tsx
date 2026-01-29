@@ -10,6 +10,8 @@ import {
 } from "@/hooks/integration/feedback/queries";
 import { useUpdateFeedback } from "@/hooks/integration/feedback/mutations";
 import { useGetFeedbackOptions } from "@/hooks/integration/feedback-options/queries";
+import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
+import UpgradeBanner from "@/components/UpgradeBanner";
 import { useState, useMemo } from "react";
 import { CheckCircle2, Clock } from "lucide-react";
 import {
@@ -29,6 +31,7 @@ import {
 } from "recharts";
 
 export default function ReportsPage() {
+  const { hasFeature } = usePlanFeatures();
   const { data: boxes = [], isLoading: boxesLoading } = useGetBoxes();
   const { data: feedbackOptions = [] } = useGetFeedbackOptions();
   const [localFilters, setLocalFilters] = useState({
@@ -40,6 +43,9 @@ export default function ReportsPage() {
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>({});
   // Inicia como true para carregar automaticamente todos os feedbacks quando não há filtros
   const [shouldFetch, setShouldFetch] = useState(true);
+
+  // Verificar se pode acessar reports
+  const canAccessReports = hasFeature("can_access_reports");
 
   // Remove duplicatas de opções de feedback (mesmo slug) e ordena por nome
   const uniqueFeedbackOptions = useMemo(() => {
@@ -59,10 +65,10 @@ export default function ReportsPage() {
     data: report,
     isLoading: reportLoading,
     error: reportError,
-  } = useGetReport(appliedFilters, shouldFetch);
+  } = useGetReport(appliedFilters, shouldFetch && canAccessReports);
 
   const { data: feedbacks = [], isLoading: feedbacksLoading } =
-    useGetFeedbacksWithFilters(appliedFilters, shouldFetch);
+    useGetFeedbacksWithFilters(appliedFilters, shouldFetch && canAccessReports);
 
   const updateFeedbackMutation = useUpdateFeedback();
 
@@ -199,6 +205,28 @@ export default function ReportsPage() {
 
     setAppliedFilters(cleanFilters);
     setShouldFetch(true);
+  }
+
+  // Se não pode acessar, mostrar mensagem de bloqueio
+  if (!canAccessReports) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Relatórios</h1>
+        <Card className="p-8 text-center">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Funcionalidade não disponível no seu plano
+          </h2>
+          <p className="text-gray-600 mb-6">
+            A página de relatórios completa está disponível apenas em planos
+            pagos.
+          </p>
+          <UpgradeBanner
+            message="Faça upgrade para acessar relatórios completos com gráficos avançados e exportação de dados"
+            ctaText="Ver planos"
+          />
+        </Card>
+      </div>
+    );
   }
 
   return (
