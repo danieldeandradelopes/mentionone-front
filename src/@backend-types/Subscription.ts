@@ -9,6 +9,7 @@ export interface SubscriptionValidateResponse {
   plan_name: string;
   plan_description: string;
   plan_price: string;
+  billing_cycle: "monthly" | "yearly" | "";
   features: PlanFeatures | null;
 }
 

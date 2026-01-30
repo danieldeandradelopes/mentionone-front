@@ -11,6 +11,7 @@ import {
   X,
   LogOut,
   BarChart,
+  CreditCard,
 } from "lucide-react";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLogout } from "@/hooks/integration/auth/mutations";
@@ -35,6 +36,7 @@ export default function Sidebar() {
     { href: "/admin/boxes", label: "Boxes", icon: Box },
     { href: "/admin/feedbacks", label: "Feedback", icon: MessageSquare },
     { href: "/admin/reports", label: "Relatórios", icon: BarChart },
+    { href: "/admin/payments", label: "Pagamentos", icon: CreditCard },
     { href: "/admin/settings", label: "Configurações", icon: Settings },
   ];
 
