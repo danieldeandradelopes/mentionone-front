@@ -508,9 +508,9 @@ export default function PaymentsPage() {
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Status</span>
+            <span className="text-sm font-medium text-gray-500">Status</span>
             <svg
               width="20"
               height="20"
@@ -530,6 +530,7 @@ export default function PaymentsPage() {
             </svg>
           </div>
           <div className="mt-2 text-xs text-gray-400">Plano atual</div>
+          <div className="mt-2 flex items-center gap-2">
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getStatusBadgeClass(
                 subscription?.status,
@@ -543,16 +544,15 @@ export default function PaymentsPage() {
                 ? "Cancelado"
                 : "Sem plano"}
             </span>
-          <div className="mt-2 text-sm text-gray-700">
-            {subscription?.plan_name || "Plano gratuito"}
+            <span className="text-sm font-semibold text-gray-800">
+              {subscription?.plan_name || "Plano gratuito"}
+            </span>
           </div>
-          <div className="mt-1 text-xs text-gray-400">
-            {planPriceLabel}
-          </div>
+          <div className="mt-1 text-xs text-gray-500">{planPriceLabel}</div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Cobrança</span>
+            <span className="text-sm font-medium text-gray-500">Cobrança</span>
             <svg
               width="20"
               height="20"
@@ -564,20 +564,20 @@ export default function PaymentsPage() {
               <path d="M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <div className="mt-2 text-sm text-gray-700">
+          <div className="mt-2 text-sm font-semibold text-gray-800">
             {subscription?.billing_cycle === "monthly"
               ? "Mensal recorrente"
               : subscription?.billing_cycle === "yearly"
               ? "Anual à vista"
               : "Sem cobrança ativa"}
           </div>
-          <div className="mt-1 text-xs text-gray-400">
+          <div className="mt-1 text-xs text-gray-500">
             Próxima cobrança: {nextDueDateLabel}
           </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-white px-4 py-3">
+        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Ações</span>
+            <span className="text-sm font-medium text-gray-500">Ações</span>
             <svg
               width="20"
               height="20"
@@ -598,7 +598,7 @@ export default function PaymentsPage() {
           <div className="mt-2 flex items-center gap-3">
             {hasActiveSubscription && subscription?.billing_cycle === "monthly" ? (
               <button
-                className="rounded-lg border border-red-200 px-3 py-1 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="rounded-lg border border-red-200 px-3 py-1 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
                 onClick={() => setShowCancelModal(true)}
                 disabled={cancelMutation.isPending}
               >
