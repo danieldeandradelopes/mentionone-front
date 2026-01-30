@@ -7,6 +7,11 @@ import { useGetEnterpriseSettings } from "@/hooks/integration/enterprise/queries
 import { useUploadFile } from "@/hooks/integration/upload/upload-file";
 import Enterprise from "@/src/@backend-types/Enterprise";
 import notify from "@/utils/notify";
+import {
+  maskCpfCnpj,
+  onlyDigits,
+  validateCpfCnpj,
+} from "@/utils/cpf-cnpj";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,9 +19,11 @@ import { useForm } from "react-hook-form";
 type EnterpriseFormData = Partial<
   Pick<
     Enterprise,
-    "name" | "cover" | "address" | "description" | "email" | "timezone"
+    "name" | "cover" | "address" | "description" | "email" | "timezone" | "document"
   >
->;
+> & {
+  document_type?: "cpf" | "cnpj" | null;
+};
 
 export default function SettingsPage() {
   const { data: enterprise, isLoading } = useGetEnterpriseSettings();
@@ -27,6 +34,8 @@ export default function SettingsPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { isSubmitting },
   } = useForm<EnterpriseFormData>({
     defaultValues: {
@@ -35,6 +44,7 @@ export default function SettingsPage() {
       address: null,
       description: null,
       email: null,
+      document: "",
       timezone: "America/Sao_Paulo",
     },
   });
@@ -53,6 +63,7 @@ export default function SettingsPage() {
         address: enterprise.address || null,
         description: enterprise.description || null,
         email: enterprise.email || null,
+        document: enterprise.document || "",
         timezone: enterprise.timezone || "America/Sao_Paulo",
       };
       reset(formData);
@@ -96,10 +107,22 @@ export default function SettingsPage() {
     try {
       // Usar a URL já enviada ou manter a existente
       const coverUrl = uploadedCoverUrl || enterprise?.cover || undefined;
+      const documentDigits = onlyDigits(data.document || "");
+
+      if (documentDigits && !validateCpfCnpj(documentDigits)) {
+        notify("CPF/CNPJ inválido.", "error");
+        return;
+      }
 
       await updateEnterpriseMutation.mutateAsync({
         ...data,
         cover: coverUrl,
+        document: documentDigits || undefined,
+        document_type: documentDigits
+          ? documentDigits.length <= 11
+            ? "cpf"
+            : "cnpj"
+          : undefined,
       });
       notify("Configurações da empresa atualizadas com sucesso!", "success");
     } catch (error) {
@@ -137,6 +160,20 @@ export default function SettingsPage() {
               required
               className="w-full border p-2 rounded"
               {...register("name", { required: true })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              CPF/CNPJ
+            </label>
+            <input
+              type="text"
+              className="w-full border p-2 rounded"
+              value={watch("document") || ""}
+              onChange={(event) =>
+                setValue("document", maskCpfCnpj(event.target.value))
+              }
             />
           </div>
 

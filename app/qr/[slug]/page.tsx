@@ -164,6 +164,25 @@ export default function QRFeedbackPage({ params }: Props) {
             {createFeedbackMutation.isPending ? "Enviando..." : "Enviar"}
           </button>
         </form>
+
+        {/* Marca MentionOne ou Copyright */}
+        {branding.show_mentionone_branding ? (
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-500 mb-2">Powered by</p>
+            <a
+              href="https://mentionone.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 font-semibold hover:text-indigo-700"
+            >
+              MentionOne
+            </a>
+          </div>
+        ) : (
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-400">MentionOne © 2025</p>
+          </div>
+        )}
       </div>
     </main>
   );

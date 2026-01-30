@@ -3,11 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { FEEDBACK_KEYS } from "./keys";
 import Feedback from "@/@backend-types/Feedback";
 
+export interface FeedbackListResponse {
+  feedbacks: Feedback[];
+  pagination: {
+    total: number;
+    visible: number;
+    limit_reached: boolean;
+    current_month: string;
+  };
+}
+
 export const useGetFeedbacks = () => {
-  return useQuery<Feedback[], Error>({
+  return useQuery<Feedback[] | FeedbackListResponse, Error>({
     queryKey: FEEDBACK_KEYS.list(),
     queryFn: async () => {
-      const response = await api.get<Feedback[]>({
+      const response = await api.get<Feedback[] | FeedbackListResponse>({
         url: "/feedbacks",
       });
       return response;

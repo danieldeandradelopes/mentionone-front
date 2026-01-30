@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/preserve-manual-memoization */
 "use client";
 
 import { useEffect, useMemo } from "react";
@@ -6,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useGetFeedbacks } from "@/hooks/integration/feedback/queries";
 import { useGetBoxes } from "@/hooks/integration/boxes/queries";
 import { useAuth } from "@/hooks/utils/use-auth";
+import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
+import UpgradeBanner from "@/components/UpgradeBanner";
 import Feedback from "@/@backend-types/Feedback";
 import {
   BarChart,
@@ -26,9 +27,19 @@ import {
 export default function DashboardPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const { data: feedbacks = [], isLoading: loadingFeedbacks } =
-    useGetFeedbacks();
+  const { data: feedbacks, isLoading: loadingFeedbacks } = useGetFeedbacks();
   const { data: boxes = [], isLoading: loadingBoxes } = useGetBoxes();
+  const { hasFeature, hasResponseLimit, getMaxResponsesPerMonth } =
+    usePlanFeatures();
+
+  // Verificar se feedbacks retornaram com paginação (limite atingido)
+  const feedbacksData = useMemo(() => {
+    return Array.isArray(feedbacks) ? feedbacks : feedbacks?.feedbacks || [];
+  }, [feedbacks]);
+
+  const pagination = useMemo(() => {
+    return Array.isArray(feedbacks) ? null : feedbacks?.pagination;
+  }, [feedbacks]);
 
   // Verifica autenticação no cliente
   useEffect(() => {
@@ -40,25 +51,25 @@ export default function DashboardPage() {
   const isLoading = loadingFeedbacks || loadingBoxes;
 
   // Ordena feedbacks por data (mais recente primeiro)
-  const sortedFeedbacks = [...feedbacks].sort((a, b) => {
+  const sortedFeedbacks = [...feedbacksData].sort((a, b) => {
     const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
     const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
     return dateB - dateA;
   });
 
   // --- Métricas ---
-  const total = feedbacks.length;
+  const total = pagination?.total || feedbacksData.length;
 
   const lastFeedback = sortedFeedbacks[0]?.created_at
     ? new Date(sortedFeedbacks[0].created_at)
     : null;
 
-  const feedbacksByCategory = feedbacks.reduce(
+  const feedbacksByCategory = feedbacksData.reduce(
     (acc: Record<string, number>, fb: Feedback) => {
       acc[fb.category] = (acc[fb.category] || 0) + 1;
       return acc;
     },
-    {}
+    {},
   );
 
   // Volume por dia (últimos 7 dias) - formatado para gráfico
@@ -67,7 +78,7 @@ export default function DashboardPage() {
   >(() => {
     // Prepare an object to count feedbacks per date (yyyy-mm-dd format)
     const feedbacksByDay: Record<string, number> = {};
-    for (const fb of feedbacks) {
+    for (const fb of feedbacksData) {
       if (fb.created_at) {
         const fbDate = new Date(fb.created_at).toISOString().split("T")[0];
         feedbacksByDay[fbDate] = (feedbacksByDay[fbDate] || 0) + 1;
@@ -90,7 +101,7 @@ export default function DashboardPage() {
 
       return { date: formattedDate, count, fullDate: dayStr };
     });
-  }, [feedbacks]);
+  }, [feedbacksData]);
 
   // Dados para gráfico de pizza (categorias)
   const categoryChartData = useMemo(() => {
@@ -99,6 +110,9 @@ export default function DashboardPage() {
       value,
     }));
   }, [feedbacksByCategory]);
+
+  // Verificar se pode acessar gráficos avançados
+  const canAccessAdvancedCharts = hasFeature("can_access_advanced_charts");
 
   // Cores para os gráficos
   const COLORS = [
@@ -128,6 +142,13 @@ export default function DashboardPage() {
       {/* HEADER */}
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
+      {/* Banner de upgrade se limite atingido */}
+      {pagination?.limit_reached && hasResponseLimit() && (
+        <UpgradeBanner
+          message={`Você atingiu o limite de ${getMaxResponsesPerMonth()} respostas este mês. Faça upgrade para ver todas as respostas.`}
+        />
+      )}
+
       {/* CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card title="Total de Feedbacks" value={total} />
@@ -151,7 +172,7 @@ export default function DashboardPage() {
 
       {/* GRÁFICOS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* GRÁFICO DE LINHA - Últimos 7 dias */}
+        {/* GRÁFICO DE LINHA - Últimos 7 dias (sempre visível) */}
         <section className="bg-white rounded-xl shadow p-6">
           <h2 className="text-lg font-semibold mb-4">
             Feedbacks dos Últimos 7 Dias
@@ -174,35 +195,74 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </section>
 
-        {/* GRÁFICO DE PIZZA - Por Categoria */}
+        {/* GRÁFICO DE PIZZA - Por Categoria (bloqueado no free) */}
+        {canAccessAdvancedCharts ? (
+          <section className="bg-white rounded-xl shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">
+              Distribuição por Categoria
+            </h2>
+            {categoryChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={categoryChartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`
+                    }
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categoryChartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-gray-500">
+                Nenhum dado disponível
+              </div>
+            )}
+          </section>
+        ) : (
+          <section className="bg-white rounded-xl shadow p-6 border-2 border-dashed border-gray-300">
+            <div className="flex flex-col items-center justify-center h-[300px] text-center">
+              <p className="text-gray-500 mb-4">
+                Gráficos avançados disponíveis em planos pagos
+              </p>
+              <UpgradeBanner
+                message="Faça upgrade para acessar gráficos avançados e relatórios completos"
+                ctaText="Ver planos"
+              />
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* GRÁFICO DE BARRAS - Por Categoria (bloqueado no free) */}
+      {canAccessAdvancedCharts ? (
         <section className="bg-white rounded-xl shadow p-6">
           <h2 className="text-lg font-semibold mb-4">
-            Distribuição por Categoria
+            Feedbacks por Categoria
           </h2>
           {categoryChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`
-                  }
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {categoryChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
+              <BarChart data={categoryChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
                 <Tooltip />
-              </PieChart>
+                <Legend />
+                <Bar dataKey="value" fill="#6366f1" name="Quantidade" />
+              </BarChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-[300px] text-gray-500">
@@ -210,28 +270,7 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
-      </div>
-
-      {/* GRÁFICO DE BARRAS - Por Categoria */}
-      <section className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Feedbacks por Categoria</h2>
-        {categoryChartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={categoryChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="value" fill="#6366f1" name="Quantidade" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="flex items-center justify-center h-[300px] text-gray-500">
-            Nenhum dado disponível
-          </div>
-        )}
-      </section>
+      ) : null}
 
       {/* ÚLTIMOS FEEDBACKS */}
       <section>
