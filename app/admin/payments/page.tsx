@@ -508,7 +508,7 @@ export default function PaymentsPage() {
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/60 px-5 py-4 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-500">Status</span>
             <svg
@@ -516,7 +516,7 @@ export default function PaymentsPage() {
               height="20"
               viewBox="0 0 24 24"
               aria-hidden
-              className="text-gray-300"
+              className="text-indigo-300"
             >
               <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2" />
               <path
@@ -550,7 +550,7 @@ export default function PaymentsPage() {
           </div>
           <div className="mt-1 text-xs text-gray-500">{planPriceLabel}</div>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-5 py-4 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-500">Cobrança</span>
             <svg
@@ -558,7 +558,7 @@ export default function PaymentsPage() {
               height="20"
               viewBox="0 0 24 24"
               aria-hidden
-              className="text-gray-300"
+              className="text-emerald-300"
             >
               <rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity="0.2" />
               <path d="M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -575,7 +575,7 @@ export default function PaymentsPage() {
             Próxima cobrança: {nextDueDateLabel}
           </div>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition hover:shadow-md">
+        <div className="rounded-2xl border border-amber-100 bg-amber-50/60 px-5 py-4 shadow-sm transition hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-500">Ações</span>
             <svg
@@ -583,7 +583,7 @@ export default function PaymentsPage() {
               height="20"
               viewBox="0 0 24 24"
               aria-hidden
-              className="text-gray-300"
+              className="text-amber-300"
             >
               <path
                 d="M12 3v6l4 2"
