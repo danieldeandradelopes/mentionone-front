@@ -15,7 +15,8 @@ export function useSubscription() {
         plan_description: "",
         plan_price: "",
         features: null,
-      }
+        billing_cycle: "",
+      },
     );
 
   return {

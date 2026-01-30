@@ -1,13 +1,24 @@
 "use client";
 
-import { useGetFeedbacks } from "@/hooks/integration/feedback/queries";
+import {
+  FeedbackListResponse,
+  useGetFeedbacks,
+} from "@/hooks/integration/feedback/queries";
 import { useUpdateFeedback } from "@/hooks/integration/feedback/mutations";
 import { CheckCircle2, Clock } from "lucide-react";
 import notify from "@/utils/notify";
+import Feedback from "@/@backend-types/Feedback";
 
 export default function FeedbackListPage() {
   const { data: feedbacks, isLoading, error } = useGetFeedbacks();
   const updateFeedbackMutation = useUpdateFeedback();
+  const feedbackList = Array.isArray(feedbacks)
+    ? feedbacks
+    : (feedbacks as FeedbackListResponse | undefined)?.feedbacks ?? [];
+  const totalCount = Array.isArray(feedbacks)
+    ? feedbacks.length
+    : (feedbacks as FeedbackListResponse | undefined)?.pagination?.total ??
+      feedbackList.length;
 
   const handleToggleStatus = async (
     feedbackId: number,
@@ -42,16 +53,16 @@ export default function FeedbackListPage() {
       <header>
         <h1 className="text-xl font-bold">Feedbacks Recebidos</h1>
         <p className="text-gray-500 text-sm">
-          Total: {feedbacks?.length} feedbacks
+          Total: {totalCount} feedbacks
         </p>
       </header>
 
       <div className="space-y-4">
-        {feedbacks?.length === 0 && (
+        {feedbackList.length === 0 && (
           <p className="text-gray-500">Nenhum feedback encontrado.</p>
         )}
 
-        {feedbacks?.map((fb) => {
+        {feedbackList.map((fb: Feedback) => {
           const isResolved = fb.status === "resolved";
 
           return (
