@@ -136,9 +136,7 @@ export default function PaymentsPage() {
     };
   };
 
-  const handleCpfCnpjChange = (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleCpfCnpjChange = (event: ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
       ...prev,
       holderCpfCnpj: maskCpfCnpj(event.target.value),
@@ -146,9 +144,7 @@ export default function PaymentsPage() {
     setFieldErrors((prev) => ({ ...prev, holderCpfCnpj: "" }));
   };
 
-  const handleCardNumberChange = (
-    event: ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleCardNumberChange = (event: ChangeEvent<HTMLInputElement>) => {
     const formatted = payment.fns.formatCardNumber(event.target.value);
     const brand = payment.fns.cardType(formatted);
     setForm((prev) => ({ ...prev, cardNumber: formatted }));
@@ -216,7 +212,10 @@ export default function PaymentsPage() {
         return (
           <svg width="24" height="16" viewBox="0 0 24 16" aria-hidden>
             <rect width="24" height="16" rx="3" fill="#7C3AED" />
-            <path d="M5 10V6h1.6v1.4h2.3V6H10v4H8.9V8.6H6.6V10H5zm6.5 0V6H13v1.4h2.1V6H16v4h-1.1V8.6H13V10h-1.5z" fill="#fff" />
+            <path
+              d="M5 10V6h1.6v1.4h2.3V6H10v4H8.9V8.6H6.6V10H5zm6.5 0V6H13v1.4h2.1V6H16v4h-1.1V8.6H13V10h-1.5z"
+              fill="#fff"
+            />
           </svg>
         );
       default:
@@ -334,9 +333,7 @@ export default function PaymentsPage() {
       setShowCancelModal(false);
     } catch (error) {
       const messageText =
-        error instanceof Error
-          ? error.message
-          : "Erro ao cancelar o plano";
+        error instanceof Error ? error.message : "Erro ao cancelar o plano";
       setMessage({ type: "error", text: messageText });
     }
   };
@@ -370,10 +367,7 @@ export default function PaymentsPage() {
     }
 
     if (
-      !payment.fns.validateCardExpiry(
-        form.cardExpiryMonth,
-        expiryYearShort,
-      )
+      !payment.fns.validateCardExpiry(form.cardExpiryMonth, expiryYearShort)
     ) {
       setFieldErrors((prev) => ({
         ...prev,
@@ -495,7 +489,7 @@ export default function PaymentsPage() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h1 className="text-2xl font-bold">Pagamentos</h1>
+        <h1 className="text-2xl font-bold">Assinaturas</h1>
         <p className="text-sm text-gray-500">
           Gerencie sua assinatura, pagamentos e dados de cobrança.
         </p>
@@ -518,7 +512,13 @@ export default function PaymentsPage() {
               aria-hidden
               className="text-indigo-300"
             >
-              <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2" />
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                fill="currentColor"
+                opacity="0.2"
+              />
               <path
                 d="M8 12l2.5 2.5L16 9"
                 stroke="currentColor"
@@ -560,8 +560,21 @@ export default function PaymentsPage() {
               aria-hidden
               className="text-emerald-300"
             >
-              <rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity="0.2" />
-              <path d="M7 12h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <rect
+                x="3"
+                y="5"
+                width="18"
+                height="14"
+                rx="3"
+                fill="currentColor"
+                opacity="0.2"
+              />
+              <path
+                d="M7 12h10"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
             </svg>
           </div>
           <div className="mt-2 text-sm font-semibold text-gray-800">
@@ -592,13 +605,22 @@ export default function PaymentsPage() {
                 fill="none"
                 strokeLinecap="round"
               />
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" opacity="0.3" />
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+                opacity="0.3"
+              />
             </svg>
           </div>
           <div className="mt-2 flex items-center gap-3">
-            {hasActiveSubscription && subscription?.billing_cycle === "monthly" ? (
+            {hasActiveSubscription &&
+            subscription?.billing_cycle === "monthly" ? (
               <button
-                className="rounded-lg border border-red-200 px-3 py-1 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                className="cursor-pointer rounded-lg border border-red-200 px-3 py-1 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
                 onClick={() => setShowCancelModal(true)}
                 disabled={cancelMutation.isPending}
               >
@@ -625,7 +647,7 @@ export default function PaymentsPage() {
               </p>
             </div>
             <button
-              className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
+              className="cursor-pointer rounded-lg bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50"
               type="button"
             >
               Ver planos
@@ -652,7 +674,13 @@ export default function PaymentsPage() {
                 aria-hidden
                 className="text-indigo-200"
               >
-                <rect width="64" height="48" rx="10" fill="currentColor" opacity="0.25" />
+                <rect
+                  width="64"
+                  height="48"
+                  rx="10"
+                  fill="currentColor"
+                  opacity="0.25"
+                />
                 <path
                   d="M16 26h32"
                   stroke="currentColor"
@@ -705,14 +733,14 @@ export default function PaymentsPage() {
             </div>
             <div className="mt-6 flex justify-end gap-2">
               <button
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
                 onClick={() => setShowCancelModal(false)}
                 disabled={cancelMutation.isPending}
               >
                 Voltar
               </button>
               <button
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                className="cursor-pointer rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                 onClick={handleCancel}
                 disabled={cancelMutation.isPending}
               >
@@ -732,7 +760,9 @@ export default function PaymentsPage() {
       >
         {!hasActiveSubscription && (
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Checkout transparente</h2>
+            <h2 className="text-lg font-semibold mb-4">
+              Checkout transparente
+            </h2>
 
             {isLoading ? (
               <p className="text-sm text-gray-500">Carregando...</p>
@@ -976,7 +1006,7 @@ export default function PaymentsPage() {
                 </div>
 
                 <button
-                  className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
                   onClick={handleSubmit}
                   disabled={checkoutMutation.isPending}
                 >
@@ -994,9 +1024,7 @@ export default function PaymentsPage() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Histórico</h2>
-            <span className="text-xs text-gray-400">
-              Últimos pagamentos
-            </span>
+            <span className="text-xs text-gray-400">Últimos pagamentos</span>
           </div>
           {loadingPayments ? (
             <p className="text-sm text-gray-500">Carregando...</p>
