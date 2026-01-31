@@ -36,7 +36,7 @@ export default function SettingsPage() {
     reset,
     setValue,
     watch,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<EnterpriseFormData>({
     defaultValues: {
       name: "",
@@ -131,6 +131,10 @@ export default function SettingsPage() {
     }
   };
 
+  const onInvalid = () => {
+    notify("Preencha os campos obrigatórios corretamente.", "error");
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -150,17 +154,30 @@ export default function SettingsPage() {
         <h2 className="text-xl font-semibold mb-4 text-gray-800">
           Informações da Empresa
         </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit, onInvalid)}
+          noValidate
+          className="space-y-4"
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nome da Empresa *
             </label>
             <input
               type="text"
-              required
               className="w-full border p-2 rounded"
-              {...register("name", { required: true })}
+              aria-invalid={!!errors.name}
+              {...register("name", {
+                required: "Nome da empresa é obrigatório.",
+                minLength: {
+                  value: 2,
+                  message: "Nome da empresa deve ter ao menos 2 caracteres.",
+                },
+              })}
             />
+            {errors.name?.message && (
+              <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
+            )}
           </div>
 
           <div>
@@ -170,11 +187,29 @@ export default function SettingsPage() {
             <input
               type="text"
               className="w-full border p-2 rounded"
+              aria-invalid={!!errors.document}
+              {...register("document", {
+                validate: (value) => {
+                  const documentDigits = onlyDigits(value || "");
+                  if (!documentDigits) return true;
+                  return (
+                    validateCpfCnpj(documentDigits) ||
+                    "CPF/CNPJ inválido."
+                  );
+                },
+              })}
               value={watch("document") || ""}
               onChange={(event) =>
-                setValue("document", maskCpfCnpj(event.target.value))
+                setValue("document", maskCpfCnpj(event.target.value), {
+                  shouldValidate: true,
+                })
               }
             />
+            {errors.document?.message && (
+              <p className="text-sm text-red-600 mt-1">
+                {errors.document.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -206,8 +241,19 @@ export default function SettingsPage() {
             <input
               type="email"
               className="w-full border p-2 rounded"
-              {...register("email")}
+              aria-invalid={!!errors.email}
+              {...register("email", {
+                validate: (value) => {
+                  if (!value) return true;
+                  const emailRegex =
+                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  return emailRegex.test(value) || "E-mail inválido.";
+                },
+              })}
             />
+            {errors.email?.message && (
+              <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+            )}
           </div>
 
           <div>
