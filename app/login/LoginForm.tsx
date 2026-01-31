@@ -7,6 +7,7 @@ import { useState } from "react";
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const loginMutation = useLogin();
@@ -34,11 +35,17 @@ export default function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white w-full max-w-sm p-6 rounded-xl shadow"
+      className="w-full max-w-sm space-y-6"
     >
-      <h1 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-        Login
-      </h1>
+      <div className="text-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">
+          Acesso seguro
+        </p>
+        <h1 className="mt-2 text-3xl font-semibold text-gray-900">Login</h1>
+        <p className="mt-2 text-sm text-gray-500">
+          Use seu email corporativo para continuar.
+        </p>
+      </div>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -46,42 +53,63 @@ export default function LoginForm() {
         </div>
       )}
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1 text-gray-700">
+      <div className="space-y-2">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
           Email
         </label>
         <input
+          id="email"
           name="email"
           type="email"
+          autoComplete="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
-          className="w-full border p-2 rounded-lg disabled:opacity-50"
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
           placeholder="seu@email.com"
         />
       </div>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-1 text-gray-700">
+      <div className="space-y-2">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700"
+        >
           Senha
         </label>
-        <input
-          name="password"
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-          className="w-full border p-2 rounded-lg disabled:opacity-50"
-          placeholder="••••••••"
-        />
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-16 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            disabled={loading}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-blue-600 transition hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            aria-label={showPassword ? "Ocultar senha" : "Exibir senha"}
+          >
+            {showPassword ? "Ocultar" : "Exibir"}
+          </button>
+        </div>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? "Entrando..." : "Entrar"}
       </button>
