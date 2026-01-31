@@ -7,6 +7,7 @@ import BoxesList from "./BoxesList";
 import { useGetBoxes } from "@/hooks/integration/boxes/queries";
 import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import { Plus } from "lucide-react";
 
 function BoxesHeaderClient() {
   const { data: boxes = [] } = useGetBoxes();
@@ -31,9 +32,10 @@ function BoxesHeaderClient() {
         {canCreateMore ? (
           <Link
             href="/admin/boxes/new"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition inline-flex items-center gap-2"
           >
-            + Criar caixa
+            <Plus size={16} />
+            Criar caixa
           </Link>
         ) : (
           <button

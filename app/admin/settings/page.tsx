@@ -13,6 +13,7 @@ import {
   validateCpfCnpj,
 } from "@/utils/cpf-cnpj";
 import Image from "next/image";
+import { Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -48,6 +49,20 @@ export default function SettingsPage() {
       timezone: "America/Sao_Paulo",
     },
   });
+
+  const inputClassName = (hasError?: boolean) =>
+    [
+      "w-full rounded-lg border px-3 py-2 text-sm transition",
+      "focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100",
+      hasError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-300",
+    ].join(" ");
+
+  const textAreaClassName = (hasError?: boolean) =>
+    [
+      "w-full rounded-lg border px-3 py-2 text-sm transition",
+      "focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100",
+      hasError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-300",
+    ].join(" ");
 
   // Estados para upload de imagem
   const [uploadedCoverUrl, setUploadedCoverUrl] = useState<string | null>(null);
@@ -165,7 +180,7 @@ export default function SettingsPage() {
             </label>
             <input
               type="text"
-              className="w-full border p-2 rounded"
+              className={inputClassName(!!errors.name)}
               aria-invalid={!!errors.name}
               {...register("name", {
                 required: "Nome da empresa é obrigatório.",
@@ -186,8 +201,9 @@ export default function SettingsPage() {
             </label>
             <input
               type="text"
-              className="w-full border p-2 rounded"
+              className={inputClassName(!!errors.document)}
               aria-invalid={!!errors.document}
+              inputMode="numeric"
               {...register("document", {
                 validate: (value) => {
                   const documentDigits = onlyDigits(value || "");
@@ -218,7 +234,7 @@ export default function SettingsPage() {
             </label>
             <input
               type="text"
-              className="w-full border p-2 rounded"
+              className={inputClassName(false)}
               {...register("address")}
             />
           </div>
@@ -228,7 +244,7 @@ export default function SettingsPage() {
               Descrição
             </label>
             <textarea
-              className="w-full border p-2 rounded"
+              className={textAreaClassName(false)}
               rows={4}
               {...register("description")}
             />
@@ -240,7 +256,7 @@ export default function SettingsPage() {
             </label>
             <input
               type="email"
-              className="w-full border p-2 rounded"
+              className={inputClassName(!!errors.email)}
               aria-invalid={!!errors.email}
               {...register("email", {
                 validate: (value) => {
@@ -319,6 +335,9 @@ export default function SettingsPage() {
                   </button>
                 </div>
               )}
+              <p className="mt-3 text-xs text-gray-500">
+                Formatos recomendados: PNG, JPG ou WEBP. Até 2MB.
+              </p>
             </div>
           </div>
 
@@ -329,8 +348,9 @@ export default function SettingsPage() {
               updateEnterpriseMutation.isPending ||
               uploadFileMutation.isPending
             }
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
           >
+            <Save size={16} />
             {uploadFileMutation.isPending
               ? "Enviando imagem..."
               : isSubmitting || updateEnterpriseMutation.isPending

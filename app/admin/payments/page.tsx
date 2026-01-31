@@ -16,6 +16,7 @@ import {
   validateCpfCnpj,
 } from "@/utils/cpf-cnpj";
 import payment from "payment";
+import { CreditCard } from "lucide-react";
 
 type FormState = {
   planPriceId: number | "";
@@ -71,6 +72,13 @@ export default function PaymentsPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  const inputClassName = (hasError?: boolean) =>
+    [
+      "mt-1 w-full rounded-lg border px-3 py-2 text-sm transition",
+      "focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100",
+      hasError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-300",
+    ].join(" ");
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -784,7 +792,7 @@ export default function PaymentsPage() {
                 <label className="block text-sm">
                   <span className="text-gray-600">Plano</span>
                   <select
-                    className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    className={inputClassName(false)}
                     value={form.planPriceId}
                     onChange={handleChange("planPriceId")}
                   >
@@ -813,7 +821,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Nome no cartão</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.cardHolderName}
                       onChange={handleChange("cardHolderName")}
                     />
@@ -821,13 +829,11 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Número do cartão</span>
                     <input
-                      className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${
-                        fieldErrors.cardNumber
-                          ? "border-red-400"
-                          : "border-gray-300"
-                      }`}
+                      className={inputClassName(!!fieldErrors.cardNumber)}
                       value={form.cardNumber}
                       onChange={handleCardNumberChange}
+                      inputMode="numeric"
+                      aria-invalid={!!fieldErrors.cardNumber}
                     />
                     <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
                       <span>
@@ -854,11 +860,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Validade (MM)</span>
                     <input
-                      className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${
-                        fieldErrors.cardExpiry
-                          ? "border-red-400"
-                          : "border-gray-300"
-                      }`}
+                      className={inputClassName(!!fieldErrors.cardExpiry)}
                       value={form.cardExpiryMonth}
                       onChange={(event) => {
                         setForm((prev) => ({
@@ -870,16 +872,15 @@ export default function PaymentsPage() {
                         }));
                         setFieldErrors((prev) => ({ ...prev, cardExpiry: "" }));
                       }}
+                      inputMode="numeric"
+                      placeholder="MM"
+                      aria-invalid={!!fieldErrors.cardExpiry}
                     />
                   </label>
                   <label className="block text-sm">
                     <span className="text-gray-600">Validade (AAAA)</span>
                     <input
-                      className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${
-                        fieldErrors.cardExpiry
-                          ? "border-red-400"
-                          : "border-gray-300"
-                      }`}
+                      className={inputClassName(!!fieldErrors.cardExpiry)}
                       value={form.cardExpiryYear}
                       onChange={(event) => {
                         setForm((prev) => ({
@@ -891,6 +892,9 @@ export default function PaymentsPage() {
                         }));
                         setFieldErrors((prev) => ({ ...prev, cardExpiry: "" }));
                       }}
+                      inputMode="numeric"
+                      placeholder="AAAA"
+                      aria-invalid={!!fieldErrors.cardExpiry}
                     />
                     {fieldErrors.cardExpiry && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -901,11 +905,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">CVV</span>
                     <input
-                      className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${
-                        fieldErrors.cardCvv
-                          ? "border-red-400"
-                          : "border-gray-300"
-                      }`}
+                      className={inputClassName(!!fieldErrors.cardCvv)}
                       value={form.cardCvv}
                       onChange={(event) => {
                         setForm((prev) => ({
@@ -914,6 +914,8 @@ export default function PaymentsPage() {
                         }));
                         setFieldErrors((prev) => ({ ...prev, cardCvv: "" }));
                       }}
+                      inputMode="numeric"
+                      aria-invalid={!!fieldErrors.cardCvv}
                     />
                     {fieldErrors.cardCvv && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -927,7 +929,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Nome completo</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderName}
                       onChange={handleChange("holderName")}
                     />
@@ -936,7 +938,7 @@ export default function PaymentsPage() {
                     <span className="text-gray-600">Email</span>
                     <input
                       type="email"
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderEmail}
                       onChange={handleChange("holderEmail")}
                     />
@@ -944,13 +946,11 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">CPF/CNPJ</span>
                     <input
-                      className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${
-                        fieldErrors.holderCpfCnpj
-                          ? "border-red-400"
-                          : "border-gray-300"
-                      }`}
+                      className={inputClassName(!!fieldErrors.holderCpfCnpj)}
                       value={form.holderCpfCnpj}
                       onChange={handleCpfCnpjChange}
+                      inputMode="numeric"
+                      aria-invalid={!!fieldErrors.holderCpfCnpj}
                     />
                     {fieldErrors.holderCpfCnpj && (
                       <span className="mt-1 block text-xs text-red-600">
@@ -961,7 +961,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Telefone</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderPhone}
                       onChange={(event) => {
                         setForm((prev) => ({
@@ -969,14 +969,16 @@ export default function PaymentsPage() {
                           holderPhone: maskPhone(event.target.value),
                         }));
                       }}
+                      inputMode="numeric"
                     />
                   </label>
                   <label className="block text-sm">
                     <span className="text-gray-600">CEP</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderPostalCode}
                       onChange={handleCepChange}
+                      inputMode="numeric"
                     />
                     {cepLoading && (
                       <span className="text-xs text-gray-500">
@@ -987,7 +989,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Endereço</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderAddress}
                       onChange={handleChange("holderAddress")}
                     />
@@ -995,15 +997,16 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Número</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderAddressNumber}
                       onChange={handleChange("holderAddressNumber")}
+                      inputMode="numeric"
                     />
                   </label>
                   <label className="block text-sm">
                     <span className="text-gray-600">Complemento</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderComplement}
                       onChange={handleChange("holderComplement")}
                     />
@@ -1011,7 +1014,7 @@ export default function PaymentsPage() {
                   <label className="block text-sm">
                     <span className="text-gray-600">Bairro/UF</span>
                     <input
-                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                      className={inputClassName(false)}
                       value={form.holderProvince}
                       onChange={handleChange("holderProvince")}
                     />
@@ -1019,10 +1022,11 @@ export default function PaymentsPage() {
                 </div>
 
                 <button
-                  className="w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="w-full cursor-pointer rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 inline-flex items-center justify-center gap-2"
                   onClick={handleSubmit}
                   disabled={checkoutMutation.isPending}
                 >
+                  <CreditCard size={16} />
                   {checkoutMutation.isPending ? "Processando..." : "Pagar"}
                 </button>
               </div>

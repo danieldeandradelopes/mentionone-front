@@ -12,6 +12,7 @@ import { useUpdateFeedback } from "@/hooks/integration/feedback/mutations";
 import { useGetFeedbackOptions } from "@/hooks/integration/feedback-options/queries";
 import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import useMask from "@/hooks/utils/use-mask";
 import { useState, useMemo } from "react";
 import { CheckCircle2, Clock } from "lucide-react";
 import {
@@ -32,6 +33,7 @@ import {
 
 export default function ReportsPage() {
   const { hasFeature } = usePlanFeatures();
+  const { formatDate } = useMask();
   const { data: boxes = [], isLoading: boxesLoading } = useGetBoxes();
   const { data: feedbackOptions = [] } = useGetFeedbackOptions();
   const [localFilters, setLocalFilters] = useState({
@@ -43,6 +45,18 @@ export default function ReportsPage() {
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>({});
   // Inicia como true para carregar automaticamente todos os feedbacks quando não há filtros
   const [shouldFetch, setShouldFetch] = useState(true);
+
+  const inputClassName =
+    "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
+
+  const toIsoDate = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (digits.length !== 8) return "";
+    const day = digits.slice(0, 2);
+    const month = digits.slice(2, 4);
+    const year = digits.slice(4, 8);
+    return `${year}-${month}-${day}`;
+  };
 
   // Verificar se pode acessar reports
   const canAccessReports = hasFeature("can_access_reports");
@@ -200,8 +214,10 @@ export default function ReportsPage() {
     const cleanFilters: ReportFilters = {};
     if (localFilters.boxId) cleanFilters.boxId = localFilters.boxId;
     if (localFilters.category) cleanFilters.category = localFilters.category;
-    if (localFilters.startDate) cleanFilters.startDate = localFilters.startDate;
-    if (localFilters.endDate) cleanFilters.endDate = localFilters.endDate;
+    const startDateIso = toIsoDate(localFilters.startDate);
+    const endDateIso = toIsoDate(localFilters.endDate);
+    if (startDateIso) cleanFilters.startDate = startDateIso;
+    if (endDateIso) cleanFilters.endDate = endDateIso;
 
     setAppliedFilters(cleanFilters);
     setShouldFetch(true);
@@ -238,7 +254,7 @@ export default function ReportsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Box */}
           <select
-            className="border p-2 rounded"
+            className={inputClassName}
             value={localFilters.boxId}
             onChange={(e) =>
               setLocalFilters({ ...localFilters, boxId: e.target.value })
@@ -254,30 +270,39 @@ export default function ReportsPage() {
 
           {/* Data Inicial */}
           <input
-            type="date"
-            className="border p-2 rounded"
+            type="text"
+            className={inputClassName}
             value={localFilters.startDate}
+            placeholder="dd/mm/aaaa"
+            inputMode="numeric"
+            maxLength={10}
             onChange={(e) =>
               setLocalFilters({
                 ...localFilters,
-                startDate: e.target.value,
+                startDate: formatDate(e.target.value),
               })
             }
           />
 
           {/* Data Final */}
           <input
-            type="date"
-            className="border p-2 rounded"
+            type="text"
+            className={inputClassName}
             value={localFilters.endDate}
+            placeholder="dd/mm/aaaa"
+            inputMode="numeric"
+            maxLength={10}
             onChange={(e) =>
-              setLocalFilters({ ...localFilters, endDate: e.target.value })
+              setLocalFilters({
+                ...localFilters,
+                endDate: formatDate(e.target.value),
+              })
             }
           />
 
           {/* Categoria */}
           <select
-            className="border p-2 rounded"
+            className={inputClassName}
             value={localFilters.category}
             onChange={(e) =>
               setLocalFilters({ ...localFilters, category: e.target.value })

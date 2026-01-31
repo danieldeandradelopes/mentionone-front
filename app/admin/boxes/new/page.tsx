@@ -42,6 +42,9 @@ export default function NewBoxPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const inputBase =
+    "rounded-lg border border-gray-300 px-3 py-2 text-sm transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
+
   // Estados para opções de feedback
   const [feedbackOptions, setFeedbackOptions] = useState<
     Array<FeedbackOptionData & { tempId?: string }>
@@ -247,6 +250,9 @@ export default function NewBoxPage() {
               </button>
             </div>
           )}
+          <p className="mt-3 text-xs text-gray-500">
+            Envie um logo em PNG, JPG ou WEBP. Recomendado 512x512.
+          </p>
         </div>
       </div>
 
@@ -267,7 +273,7 @@ export default function NewBoxPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border p-3 rounded-lg"
+              className={`w-full ${inputBase}`}
             />
           </div>
 
@@ -281,7 +287,7 @@ export default function NewBoxPage() {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               required
-              className="w-full border p-3 rounded-lg"
+              className={`w-full ${inputBase}`}
             />
           </div>
 
@@ -297,7 +303,7 @@ export default function NewBoxPage() {
                 const limpa = e.target.value.replace(/[^a-zA-Z0-9_-]/g, "");
                 setSlug(limpa);
               }}
-              className="w-full border p-3 rounded-lg"
+              className={`w-full ${inputBase}`}
             />
             <small className="text-xs text-gray-500">
               Pode usar apenas letras, números, hífen (-) e underline (_). Deixe
@@ -327,7 +333,7 @@ export default function NewBoxPage() {
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
                   placeholder="#3B82F6"
-                  className="flex-1 border p-2 rounded-lg"
+                  className={`flex-1 ${inputBase}`}
                 />
               </div>
               <small className="text-xs text-gray-500 mt-1 block">
@@ -352,7 +358,7 @@ export default function NewBoxPage() {
                   value={secondaryColor}
                   onChange={(e) => setSecondaryColor(e.target.value)}
                   placeholder="#1E40AF"
-                  className="flex-1 border p-2 rounded-lg"
+                  className={`flex-1 ${inputBase}`}
                 />
               </div>
               <small className="text-xs text-gray-500 mt-1 block">
@@ -361,6 +367,10 @@ export default function NewBoxPage() {
               </small>
             </div>
           </div>
+
+          <p className="text-xs text-gray-500">
+            Sugestões de paleta: Primária #2563EB, Secundária #1E40AF.
+          </p>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -371,7 +381,7 @@ export default function NewBoxPage() {
               placeholder="Nome do cliente"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
-              className="w-full border p-3 rounded-lg"
+              className={`w-full ${inputBase}`}
             />
           </div>
         </div>
@@ -396,7 +406,7 @@ export default function NewBoxPage() {
                     handleAddOption();
                   }
                 }}
-                className="flex-1 border p-3 rounded-lg"
+                className={`flex-1 ${inputBase}`}
               />
               <select
                 value={newOptionType}
@@ -405,7 +415,7 @@ export default function NewBoxPage() {
                     e.target.value as "criticism" | "suggestion" | "praise"
                   )
                 }
-                className="border p-3 rounded-lg sm:min-w-[150px] w-full sm:w-auto"
+                className={`${inputBase} sm:min-w-[150px] w-full sm:w-auto`}
               >
                 <option value="criticism">Crítica</option>
                 <option value="suggestion">Sugestão</option>
