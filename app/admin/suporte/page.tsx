@@ -41,7 +41,7 @@ export default function SupportPage() {
           <iframe
             src="https://ud9ik.share.hsforms.com/2g5h13O21TF-p-2yBP8H0XA"
             title="Formulário de suporte"
-            className="w-full min-h-[760px] rounded-lg border border-gray-100"
+            className="w-full rounded-lg border border-gray-100 h-[980px] md:h-[1080px] xl:h-[1200px]"
             loading="lazy"
           />
         </div>

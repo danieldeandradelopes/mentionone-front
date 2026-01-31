@@ -280,6 +280,25 @@ export default function PaymentsPage() {
       currency: "BRL",
     }).format(value);
 
+  const normalizeCurrencyValue = (
+    value: number | string | null | undefined,
+  ) => {
+    if (value === null || value === undefined || value === "") return null;
+    if (typeof value === "string") {
+      const hasComma = value.includes(",");
+      const normalized = Number(value.replace(/\./g, "").replace(",", "."));
+      if (Number.isNaN(normalized)) return null;
+      return hasComma ? normalized : normalized / 100;
+    }
+    if (Number.isNaN(value)) return null;
+    return value / 100;
+  };
+
+  const toCurrencyLabel = (value: number | string | null | undefined) => {
+    const normalized = normalizeCurrencyValue(value);
+    return normalized === null ? "Gratuito" : formatCurrency(normalized);
+  };
+
   const mapPaymentStatus = (status: string) => {
     switch (status) {
       case "paid":
@@ -458,13 +477,7 @@ export default function PaymentsPage() {
   const nextDueDateLabel = nextDueDate
     ? nextDueDate.toLocaleDateString("pt-BR")
     : "Sem data";
-  const planPriceNumber = subscription?.plan_price
-    ? Number(String(subscription.plan_price).replace(",", "."))
-    : null;
-  const planPriceLabel =
-    planPriceNumber && !Number.isNaN(planPriceNumber)
-      ? formatCurrency(planPriceNumber)
-      : "Gratuito";
+  const planPriceLabel = toCurrencyLabel(subscription?.plan_price);
 
   const featureItems = subscription?.features
     ? [
@@ -782,7 +795,7 @@ export default function PaymentsPage() {
                         {option.billingCycle === "monthly"
                           ? "Mensal"
                           : "Anual à vista"}{" "}
-                        ({formatCurrency(option.price)})
+                        ({toCurrencyLabel(option.price)})
                       </option>
                     ))}
                   </select>
@@ -1041,7 +1054,7 @@ export default function PaymentsPage() {
                 >
                   <div className="flex justify-between">
                     <span className="font-medium">
-                      {formatCurrency(payment.amount)}
+                      {toCurrencyLabel(payment.amount)}
                     </span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${getPaymentBadgeClass(
