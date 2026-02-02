@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ function getPublicUrl(): string {
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -514,5 +514,24 @@ export default function OnboardingPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+function OnboardingFallback() {
+  return (
+    <div className="max-w-2xl mx-auto space-y-8 pb-12 animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/3" />
+      <div className="h-4 bg-gray-100 rounded w-full" />
+      <div className="h-4 bg-gray-100 rounded w-2/3" />
+      <div className="h-12 bg-gray-200 rounded w-full" />
+    </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<OnboardingFallback />}>
+      <OnboardingContent />
+    </Suspense>
   );
 }
