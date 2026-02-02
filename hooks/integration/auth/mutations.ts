@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/utils/use-auth";
 import { useSubscription } from "@/hooks/utils/use-subscription";
 import { api } from "@/services/api";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AUTH_KEYS, LoginCredentials } from "./keys";
 import Authentication from "@/@backend-types/Authentication";
 import { defaultEnterprise } from "@/hooks/utils/use-auth";
@@ -57,6 +57,21 @@ export const useLogout = () => {
       await logout();
     },
     mutationKey: AUTH_KEYS.logout(),
+    retry: false,
+  });
+};
+
+export const useCompleteOnboarding = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, void>({
+    mutationFn: async () => {
+      await api.patch({ url: "/users/onboarding" });
+    },
+    mutationKey: ["auth", "completeOnboarding"],
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AUTH_KEYS.userSession() });
+    },
     retry: false,
   });
 };

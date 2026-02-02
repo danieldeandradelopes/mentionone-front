@@ -59,6 +59,12 @@ type PutParams = {
   headers?: HeaderType;
 };
 
+type PatchParams = {
+  url: string;
+  data?: unknown;
+  headers?: HeaderType;
+};
+
 type DeleteParams = {
   url: string;
   headers?: HeaderType;
@@ -311,6 +317,44 @@ export const api = {
         }
         return fetch(`${API_BASE_URL}${url}`, {
           method: "PUT",
+          headers: newHeaders,
+          body: JSON.stringify(data),
+          credentials: "include",
+        });
+      }
+    );
+  },
+
+  async patch<T>({ url, data = {}, headers }: PatchParams): Promise<T> {
+    const requestHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+      "x-timezone": getUserTimeZoneForRequest(),
+      ...headers,
+    };
+
+    if (shouldAddAuthHeader(url)) {
+      const token = getAuthToken();
+      if (token) {
+        requestHeaders.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    return makeRequestWithRetry<T>(
+      () =>
+        fetch(`${API_BASE_URL}${url}`, {
+          method: "PATCH",
+          headers: requestHeaders,
+          body: JSON.stringify(data),
+          credentials: "include",
+        }),
+      () => {
+        const newHeaders = { ...requestHeaders };
+        const newToken = getAuthToken();
+        if (newToken && shouldAddAuthHeader(url)) {
+          newHeaders.Authorization = `Bearer ${newToken}`;
+        }
+        return fetch(`${API_BASE_URL}${url}`, {
+          method: "PATCH",
           headers: newHeaders,
           body: JSON.stringify(data),
           credentials: "include",

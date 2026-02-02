@@ -13,6 +13,7 @@ import {
   BarChart,
   CreditCard,
   LifeBuoy,
+  PlayCircle,
 } from "lucide-react";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLogout } from "@/hooks/integration/auth/mutations";
@@ -37,6 +38,7 @@ export default function Sidebar() {
     { href: "/admin/boxes", label: "Boxes", icon: Box },
     { href: "/admin/feedbacks", label: "Feedback", icon: MessageSquare },
     { href: "/admin/reports", label: "Relatórios", icon: BarChart },
+    { href: "/admin/tutorials", label: "Tutoriais", icon: PlayCircle },
     { href: "/admin/payments", label: "Assinaturas", icon: CreditCard },
     { href: "/admin/suporte", label: "Suporte", icon: LifeBuoy },
     { href: "/admin/settings", label: "Configurações", icon: Settings },

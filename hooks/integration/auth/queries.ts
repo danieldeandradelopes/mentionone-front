@@ -3,6 +3,22 @@ import { api } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 import { AUTH_KEYS } from "./keys";
 
+export interface UserSessionUser {
+  id: number;
+  name: string;
+  email: string;
+  access_level: string;
+  avatar?: string;
+  phone?: string;
+}
+
+export interface UserSessionResponse {
+  user: UserSessionUser;
+  Enterprise?: { id: number; name: string; [key: string]: unknown } | null;
+  phones?: unknown[] | null;
+  onboarding_completed_at: string | null;
+}
+
 export interface UserSession {
   id: number;
   name: string;
@@ -10,23 +26,18 @@ export interface UserSession {
   access_level: string;
   avatar: string;
   phone: string;
-  enterprise?: {
-    id: number;
-    name: string;
-  };
+  enterprise?: { id: number; name: string };
 }
 
 export const useGetUserSession = () => {
   const { isAuthenticated } = useAuth();
 
-  return useQuery<UserSession, Error, UserSession>({
+  return useQuery<UserSessionResponse, Error, UserSessionResponse>({
     queryKey: AUTH_KEYS.userSession(),
     queryFn: async () => {
-      // O api.get já adiciona automaticamente o token do localStorage
-      const response = await api.get<UserSession>({
+      const response = await api.get<UserSessionResponse>({
         url: "/users/session",
       });
-
       return response;
     },
     retry: false,
