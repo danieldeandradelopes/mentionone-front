@@ -77,7 +77,9 @@ export default function PaymentsPage() {
     [
       "mt-1 w-full rounded-lg border px-3 py-2 text-sm transition",
       "focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100",
-      hasError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-300",
+      hasError
+        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+        : "border-gray-300",
     ].join(" ");
 
   useEffect(() => {
@@ -560,10 +562,10 @@ export default function PaymentsPage() {
               {subscription?.status === "active"
                 ? "Ativo"
                 : subscription?.status === "past_due"
-                ? "Vencido"
-                : subscription?.status === "canceled"
-                ? "Cancelado"
-                : "Sem plano"}
+                  ? "Vencido"
+                  : subscription?.status === "canceled"
+                    ? "Cancelado"
+                    : "Sem plano"}
             </span>
             <span className="text-sm font-semibold text-gray-800">
               {subscription?.plan_name || "Plano gratuito"}
@@ -602,8 +604,8 @@ export default function PaymentsPage() {
             {subscription?.billing_cycle === "monthly"
               ? "Mensal recorrente"
               : subscription?.billing_cycle === "yearly"
-              ? "Anual à vista"
-              : "Sem cobrança ativa"}
+                ? "Anual à vista"
+                : "Sem cobrança ativa"}
           </div>
           <div className="mt-1 text-xs text-gray-500">
             Próxima cobrança: {nextDueDateLabel}
