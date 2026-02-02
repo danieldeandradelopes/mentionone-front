@@ -3,8 +3,13 @@
 import { use, useState, useMemo } from "react";
 import QRCode from "qrcode-generator";
 import Link from "next/link";
-import { ArrowLeft, Copy, Check } from "lucide-react";
-import { useGetBox } from "@/hooks/integration/boxes/queries";
+import Image from "next/image";
+import { ArrowLeft, Copy, Check, Printer } from "lucide-react";
+import {
+  useGetBox,
+  useGetBoxBrandingById,
+} from "@/hooks/integration/boxes/queries";
+import { usePlanFeatures } from "@/hooks/utils/use-plan-features";
 
 function getPublicUrl(): string {
   if (typeof window !== "undefined") {
@@ -28,6 +33,10 @@ export default function QrCodePage({
   const boxId = Number(id);
   const [copied, setCopied] = useState(false);
   const { data: box, isLoading, error } = useGetBox(boxId);
+  const { data: boxBranding } = useGetBoxBrandingById(boxId);
+  const showMentionOneBranding = usePlanFeatures().hasFeature(
+    "show_mentionone_branding",
+  );
 
   const publicUrl = getPublicUrl();
   // Usa o slug da box na URL do QR Code
@@ -113,23 +122,34 @@ export default function QrCodePage({
                 readOnly
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
-              <button
-                onClick={handleCopyUrl}
-                disabled={!boxUrl}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap sm:w-auto w-full"
-              >
-                {copied ? (
-                  <>
-                    <Check size={18} />
-                    Copiado!
-                  </>
-                ) : (
-                  <>
-                    <Copy size={18} />
-                    Copiar
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2 sm:w-auto w-full">
+                <button
+                  onClick={handleCopyUrl}
+                  disabled={!boxUrl}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={18} />
+                      Copiado!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={18} />
+                      Copiar
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  disabled={!boxUrl}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  <Printer size={18} />
+                  Imprimir
+                </button>
+              </div>
             </div>
           </div>
 
@@ -139,6 +159,107 @@ export default function QrCodePage({
           </p>
         </div>
       </div>
+
+      {/* Área de impressão A4 (oculta na tela, visível só em @media print) */}
+      {svgTag && (
+        <div
+          id="qrcode-print-area"
+          className="hidden print:block bg-white text-black p-0 m-0"
+          style={{
+            width: "210mm",
+            minHeight: "297mm",
+            padding: "15mm",
+            boxSizing: "border-box",
+          }}
+        >
+          <div className="flex flex-col min-h-full break-inside-avoid">
+            <header className="mb-4 break-inside-avoid">
+              <h1 className="text-xl font-bold">{box.name}</h1>
+              {box.location && (
+                <p className="text-sm text-gray-600">{box.location}</p>
+              )}
+            </header>
+            <p className="text-sm mb-6 break-inside-avoid">
+              Escaneie o QR Code abaixo com a câmera do celular para acessar o
+              formulário de feedback e deixar sua sugestão.
+            </p>
+            <div
+              className="flex justify-center my-6 break-inside-avoid"
+              style={{
+                maxWidth: "120mm",
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              <div
+                className="bg-white border-2 border-gray-300 p-4"
+                dangerouslySetInnerHTML={{ __html: svgTag }}
+              />
+            </div>
+            <div className="mt-auto pt-6 break-inside-avoid">
+              {showMentionOneBranding ? (
+                <div className="flex flex-col items-start gap-2">
+                  <Image
+                    src="/short-logo.png"
+                    alt="Mention One"
+                    width={140}
+                    height={40}
+                    className="h-10 w-auto object-contain object-left"
+                  />
+                  <p className="text-lg font-semibold text-gray-800">
+                    Mention One
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-start gap-2">
+                  {boxBranding?.logo_url ? (
+                    <Image
+                      src={boxBranding.logo_url}
+                      alt={boxBranding.client_name || box.name}
+                      width={120}
+                      height={48}
+                      className="max-h-12 w-auto object-contain"
+                      unoptimized
+                    />
+                  ) : null}
+                  <p className="text-lg font-semibold text-gray-800">
+                    {boxBranding?.client_name || box.name}
+                  </p>
+                </div>
+              )}
+            </div>
+            <footer className="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-500 text-center">
+              Desenvolvido por MentionOne
+            </footer>
+          </div>
+        </div>
+      )}
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @media print {
+              body * {
+                visibility: hidden;
+              }
+              #qrcode-print-area,
+              #qrcode-print-area * {
+                visibility: visible;
+              }
+              #qrcode-print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 15mm;
+                box-sizing: border-box;
+              }
+            }
+          `,
+        }}
+      />
     </div>
   );
 }

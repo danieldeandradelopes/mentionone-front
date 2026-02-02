@@ -3,7 +3,7 @@ import LayoutWrapper from "@/components/LayoutWrapper";
 import { Providers } from "@/providers/Providers";
 
 export const metadata = {
-  title: "Meu App",
+  title: "MentionOne",
   icons: {
     icon: [
       { url: "/favicon.svg?v=2", type: "image/svg+xml" },

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCompleteOnboarding } from "@/hooks/integration/auth/mutations";
@@ -213,6 +214,13 @@ function OnboardingContent() {
 
       {step === 1 && (
         <Card className="p-6 space-y-6">
+          <Image
+            src="/short-logo.png"
+            alt="MentionOne"
+            width={140}
+            height={40}
+            className="h-10 w-auto object-contain"
+          />
           <h2 className="text-xl font-bold text-gray-800">
             Bem-vindo ao MentionOne
           </h2>

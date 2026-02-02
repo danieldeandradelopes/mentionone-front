@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCompleteOnboarding } from "@/hooks/integration/auth/mutations";
@@ -188,6 +189,13 @@ export default function OnboardingWizard({ onClose }: OnboardingWizardProps) {
         <div className="p-6">
           {step === 1 && (
             <div className="space-y-6">
+              <Image
+                src="/short-logo.png"
+                alt="MentionOne"
+                width={140}
+                height={40}
+                className="h-10 w-auto object-contain"
+              />
               <h2 className="text-xl font-bold text-gray-800">
                 Bem-vindo ao MentionOne
               </h2>

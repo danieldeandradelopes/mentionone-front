@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -73,9 +74,13 @@ export default function Sidebar() {
         {/* HEADER */}
         <div className="h-16 border-b border-zinc-800 flex items-center justify-between px-5">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-300 text-sm font-semibold">
-              M1
-            </div>
+            <Image
+              src="/short-logo.png"
+              alt="MentionOne"
+              width={132}
+              height={36}
+              className="h-9 w-auto object-contain"
+            />
             <span className="text-xl font-semibold text-white">MentionOne</span>
           </div>
 

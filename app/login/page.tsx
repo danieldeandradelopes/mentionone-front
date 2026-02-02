@@ -26,6 +26,13 @@ export default async function LoginPage() {
             />
             <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/10 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 text-white">
+              <Image
+                src="/short-logo.png"
+                alt="MentionOne"
+                width={140}
+                height={40}
+                className="h-10 w-auto object-contain object-left mb-3"
+              />
               <p className="text-sm uppercase tracking-[0.2em] text-white/80">
                 MentionOne
               </p>

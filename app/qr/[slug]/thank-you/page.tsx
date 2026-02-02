@@ -73,9 +73,16 @@ export function ThankYou({ params }: TYProps) {
               href="https://mentionone.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-indigo-600 font-semibold hover:text-indigo-700"
+              className="inline-flex flex-col items-center gap-1 text-indigo-600 font-semibold hover:text-indigo-700"
             >
-              MentionOne
+              <Image
+                src="/short-logo.png"
+                alt="MentionOne"
+                width={120}
+                height={34}
+                className="h-8 w-auto object-contain"
+              />
+              <span>MentionOne</span>
             </a>
           </div>
         ) : (
