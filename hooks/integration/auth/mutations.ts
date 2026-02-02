@@ -66,7 +66,7 @@ export const useCompleteOnboarding = () => {
 
   return useMutation<void, Error, void>({
     mutationFn: async () => {
-      await api.patch({ url: "/users/onboarding" });
+      await api.put({ url: "/users/onboarding", data: {} });
     },
     mutationKey: ["auth", "completeOnboarding"],
     onSuccess: () => {

@@ -137,7 +137,7 @@ async function refreshToken(): Promise<string> {
 
 async function makeRequestWithRetry<T>(
   requestFn: () => Promise<Response>,
-  recreateRequestFn?: () => Promise<Response>
+  recreateRequestFn?: () => Promise<Response>,
 ): Promise<T> {
   loadingManager.start();
   try {
@@ -239,9 +239,9 @@ export const api = {
             method: "GET",
             headers: newHeaders,
             credentials: "include",
-          }
+          },
         );
-      }
+      },
     );
   },
 
@@ -281,7 +281,7 @@ export const api = {
           body: JSON.stringify(data),
           credentials: "include",
         });
-      }
+      },
     );
   },
 
@@ -321,11 +321,11 @@ export const api = {
           body: JSON.stringify(data),
           credentials: "include",
         });
-      }
+      },
     );
   },
 
-  async patch<T>({ url, data = {}, headers }: PatchParams): Promise<T> {
+  async patch<T>({ url, data, headers }: PatchParams): Promise<T> {
     const requestHeaders: Record<string, string> = {
       "Content-Type": "application/json",
       "x-timezone": getUserTimeZoneForRequest(),
@@ -339,12 +339,14 @@ export const api = {
       }
     }
 
+    const body = data !== undefined ? JSON.stringify(data) : undefined;
+
     return makeRequestWithRetry<T>(
       () =>
         fetch(`${API_BASE_URL}${url}`, {
           method: "PATCH",
           headers: requestHeaders,
-          body: JSON.stringify(data),
+          body,
           credentials: "include",
         }),
       () => {
@@ -356,10 +358,10 @@ export const api = {
         return fetch(`${API_BASE_URL}${url}`, {
           method: "PATCH",
           headers: newHeaders,
-          body: JSON.stringify(data),
+          body,
           credentials: "include",
         });
-      }
+      },
     );
   },
 
@@ -397,7 +399,7 @@ export const api = {
           headers: newHeaders,
           credentials: "include",
         });
-      }
+      },
     );
   },
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useUpdateBox,
   useDeleteBox,
@@ -25,6 +25,8 @@ import { Trash2, Plus, Edit } from "lucide-react";
 
 export default function EditBoxForm({ box }: { box: Boxes }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnToOnboarding = searchParams.get("from") === "onboarding";
   const [name, setName] = useState(box.name);
   const [location, setLocation] = useState(box.location);
   const [slug, setSlug] = useState(box.slug);
@@ -34,7 +36,7 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
   const updateBoxMutation = useUpdateBox();
   const deleteBoxMutation = useDeleteBox();
   const { data: branding, isLoading: brandingLoading } = useGetBoxBrandingById(
-    box.id
+    box.id,
   );
   const updateBrandingMutation = useUpdateBoxBranding();
   const uploadFileMutation = useUploadFile();
@@ -120,7 +122,7 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
     // Verifica se já existe uma opção com o mesmo nome
     const existingOption = existingOptions.find(
       (opt) =>
-        opt.name.toLowerCase().trim() === newOptionName.toLowerCase().trim()
+        opt.name.toLowerCase().trim() === newOptionName.toLowerCase().trim(),
     );
 
     if (existingOption) {
@@ -206,8 +208,8 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
       const logoUrl: string | undefined = uploadedLogoUrl
         ? uploadedLogoUrl
         : branding?.logo_url
-        ? branding.logo_url
-        : undefined;
+          ? branding.logo_url
+          : undefined;
 
       // Atualizar o branding (cria se não existir)
       await updateBrandingMutation.mutateAsync({
@@ -219,7 +221,9 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
       });
 
       notify("Caixa atualizada com sucesso!", "success");
-      router.push("/admin/boxes");
+      router.push(
+        returnToOnboarding ? "/admin/onboarding?step=3" : "/admin/boxes",
+      );
     } catch (error) {
       console.error(error);
       notify("Erro ao atualizar caixa", "error");
@@ -234,7 +238,9 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
     try {
       await deleteBoxMutation.mutateAsync(box.id);
       notify("Caixa excluída com sucesso!", "success");
-      router.push("/admin/boxes");
+      router.push(
+        returnToOnboarding ? "/admin/onboarding?step=3" : "/admin/boxes",
+      );
     } catch (error) {
       console.error(error);
       notify("Erro ao excluir caixa", "error");
@@ -477,7 +483,7 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
                 value={newOptionType}
                 onChange={(e) =>
                   setNewOptionType(
-                    e.target.value as "criticism" | "suggestion" | "praise"
+                    e.target.value as "criticism" | "suggestion" | "praise",
                   )
                 }
                 className={`${inputBase} sm:min-w-[150px] w-full sm:w-auto`}
@@ -525,7 +531,7 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
                             e.target.value as
                               | "criticism"
                               | "suggestion"
-                              | "praise"
+                              | "praise",
                           )
                         }
                         className={inputBase}
@@ -561,8 +567,8 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
                           {option.type === "criticism"
                             ? "Crítica"
                             : option.type === "suggestion"
-                            ? "Sugestão"
-                            : "Elogio"}
+                              ? "Sugestão"
+                              : "Elogio"}
                           )
                         </span>
                       </div>

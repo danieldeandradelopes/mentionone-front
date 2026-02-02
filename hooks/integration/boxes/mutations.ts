@@ -4,9 +4,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { BOXES_KEYS } from "./keys";
 
-export const useCreateBox = () => {
+export const useCreateBox = (options?: { redirectOnSuccess?: boolean }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const redirectOnSuccess = options?.redirectOnSuccess !== false;
 
   return useMutation<Boxes, Error, BoxesStoreData>({
     mutationFn: async (data) => {
@@ -18,10 +19,8 @@ export const useCreateBox = () => {
     },
     mutationKey: BOXES_KEYS.all(),
     onSuccess: () => {
-      // Invalida a lista de boxes para refetch
       queryClient.invalidateQueries({ queryKey: BOXES_KEYS.list() });
-      // Redireciona para a lista
-      router.push("/admin/boxes");
+      if (redirectOnSuccess) router.push("/admin/boxes");
     },
     onError: (err) => {
       console.error("Erro ao criar box:", err);
