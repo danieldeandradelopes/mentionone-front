@@ -16,6 +16,7 @@ import {
   PlayCircle,
   Building2,
   ClipboardList,
+  Sparkles,
 } from "lucide-react";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLogout } from "@/hooks/integration/auth/mutations";
@@ -42,6 +43,9 @@ export default function Sidebar() {
   const npsLinks = [
     { href: "/admin/nps/campaigns", label: "Campanhas", icon: ClipboardList },
     { href: "/admin/nps/branches", label: "Filiais", icon: Building2 },
+  ];
+  const insightsLinks = [
+    { href: "/admin/insights", label: "Insights com IA", icon: Sparkles },
   ];
   const mainLinks = [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -142,6 +146,36 @@ export default function Sidebar() {
               </span>
             </li>
             {npsLinks.map(({ href, label, icon: Icon }) => {
+              const active = pathname.startsWith(href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ml-1
+                      ${
+                        active
+                          ? "bg-zinc-800 text-white"
+                          : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                      }
+                    `}
+                  >
+                    <Icon
+                      size={18}
+                      className={active ? "text-emerald-400" : "text-zinc-500"}
+                    />
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+            <li className="pt-2 mt-1 border-t border-zinc-800">
+              <span className="px-3 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Insights
+              </span>
+            </li>
+            {insightsLinks.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
               return (
                 <li key={href}>
