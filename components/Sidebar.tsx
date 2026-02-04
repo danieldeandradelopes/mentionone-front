@@ -48,17 +48,23 @@ export default function Sidebar() {
     <>
       {/* BOTÃO MOBILE — ABRIR */}
       <button
+        type="button"
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 bg-zinc-900 p-2 rounded-lg border border-zinc-700 shadow"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-zinc-900 p-2 rounded-lg border border-zinc-700 shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        aria-label="Abrir menu de navegação"
       >
-        <Menu size={22} className="text-white" />
+        <Menu size={22} className="text-white" aria-hidden />
       </button>
 
       {/* BACKDROP MOBILE */}
       {open && (
         <div
+          role="button"
+          tabIndex={-1}
           onClick={() => setOpen(false)}
+          onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
           className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+          aria-label="Fechar menu"
         />
       )}
 
@@ -69,6 +75,8 @@ export default function Sidebar() {
           ${open ? "translate-x-0" : "-translate-x-full"}
           lg:!translate-x-0
         `}
+        role="navigation"
+        aria-label="Menu principal"
       >
         {/* HEADER */}
         <div className="h-16 border-b border-zinc-800 flex items-center justify-between px-5">
@@ -78,15 +86,17 @@ export default function Sidebar() {
 
           {/* Botão fechar mobile */}
           <button
+            type="button"
             onClick={() => setOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-zinc-800"
+            className="lg:hidden p-2 rounded-lg hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            aria-label="Fechar menu"
           >
-            <X size={20} className="text-zinc-300" />
+            <X size={20} className="text-zinc-300" aria-hidden />
           </button>
         </div>
 
         {/* NAV LINKS */}
-        <nav className="flex-1 mt-4">
+        <nav className="flex-1 mt-4" aria-label="Navegação do painel">
           <ul className="flex flex-col gap-1 px-3">
             {links.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
@@ -120,11 +130,13 @@ export default function Sidebar() {
         {/* FOOTER */}
         <footer className="border-t border-zinc-800">
           <button
+            type="button"
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
-            className="w-full flex items-center gap-3 px-3 py-3 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-red-400 transition disabled:opacity-50"
+            className="w-full flex items-center gap-3 px-3 py-3 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-red-400 transition disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded-md"
+            aria-label="Sair da conta"
           >
-            <LogOut size={18} className="text-zinc-500" />
+            <LogOut size={18} className="text-zinc-500" aria-hidden />
             {logoutMutation.isPending ? "Saindo..." : "Sair"}
           </button>
           <div className="px-4 py-3 text-xs text-zinc-500">

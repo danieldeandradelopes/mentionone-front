@@ -18,6 +18,7 @@ import { useDeleteBox } from "@/hooks/integration/boxes/mutations";
 import notify from "@/utils/notify";
 import { ChevronLeft, Edit, Trash2, Plus, QrCode } from "lucide-react";
 import QRCode from "qrcode-generator";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { AUTH_KEYS } from "@/hooks/integration/auth/keys";
 import type { BoxesStoreData } from "@/@backend-types/Boxes";
@@ -76,6 +77,7 @@ function OnboardingContent() {
   const [secondaryColor, setSecondaryColor] = useState("#1E40AF");
   const [feedbackOptionName, setFeedbackOptionName] =
     useState("Feedback geral");
+  const [deleteBoxTarget, setDeleteBoxTarget] = useState<Boxes | null>(null);
 
   // Ao voltar da edição da caixa (ou com ?step= na URL), abrir no passo correto
   useEffect(() => {
@@ -143,13 +145,13 @@ function OnboardingContent() {
     }
   };
 
-  const handleDeleteBox = async (box: Boxes) => {
-    if (!confirm(`Excluir a caixa "${box.name}"? Você poderá criar outra.`))
-      return;
+  const handleConfirmDeleteBox = async () => {
+    if (!deleteBoxTarget) return;
     try {
-      await deleteBoxMutation.mutateAsync(box.id);
+      await deleteBoxMutation.mutateAsync(deleteBoxTarget.id);
       queryClient.invalidateQueries({ queryKey: ["boxes"] });
       notify("Caixa excluída.", "success");
+      setDeleteBoxTarget(null);
       setShowCreateForm(true);
     } catch (err) {
       console.error(err);
@@ -364,12 +366,13 @@ function OnboardingContent() {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => handleDeleteBox(existingBox)}
+                  onClick={() => setDeleteBoxTarget(existingBox)}
                   disabled={deleteBoxMutation.isPending}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 font-medium text-sm disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 font-medium text-sm disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+                  aria-label={`Excluir caixa ${existingBox.name}`}
                 >
                   <Trash2 size={16} />
-                  {deleteBoxMutation.isPending ? "Excluindo..." : "Excluir"}
+                  Excluir
                 </button>
                 <button
                   type="button"
@@ -521,6 +524,22 @@ function OnboardingContent() {
           </Button>
         </Card>
       )}
+
+      <ConfirmModal
+        open={!!deleteBoxTarget}
+        title="Excluir caixa"
+        description={
+          deleteBoxTarget
+            ? `Excluir a caixa "${deleteBoxTarget.name}"? Você poderá criar outra depois.`
+            : ""
+        }
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleConfirmDeleteBox}
+        onCancel={() => setDeleteBoxTarget(null)}
+        isLoading={deleteBoxMutation.isPending}
+      />
     </div>
   );
 }

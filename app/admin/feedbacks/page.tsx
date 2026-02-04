@@ -5,7 +5,8 @@ import {
   useGetFeedbacks,
 } from "@/hooks/integration/feedback/queries";
 import { useUpdateFeedback } from "@/hooks/integration/feedback/mutations";
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock, MessageSquare, QrCode } from "lucide-react";
+import Link from "next/link";
 import notify from "@/utils/notify";
 import Feedback from "@/@backend-types/Feedback";
 
@@ -14,15 +15,15 @@ export default function FeedbackListPage() {
   const updateFeedbackMutation = useUpdateFeedback();
   const feedbackList = Array.isArray(feedbacks)
     ? feedbacks
-    : (feedbacks as FeedbackListResponse | undefined)?.feedbacks ?? [];
+    : ((feedbacks as FeedbackListResponse | undefined)?.feedbacks ?? []);
   const totalCount = Array.isArray(feedbacks)
     ? feedbacks.length
-    : (feedbacks as FeedbackListResponse | undefined)?.pagination?.total ??
-      feedbackList.length;
+    : ((feedbacks as FeedbackListResponse | undefined)?.pagination?.total ??
+      feedbackList.length);
 
   const handleToggleStatus = async (
     feedbackId: number,
-    currentStatus: string
+    currentStatus: string,
   ) => {
     const newStatus = currentStatus === "resolved" ? "pending" : "resolved";
     try {
@@ -34,7 +35,7 @@ export default function FeedbackListPage() {
         `Feedback marcado como ${
           newStatus === "resolved" ? "concluído" : "pendente"
         }`,
-        "success"
+        "success",
       );
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
@@ -43,23 +44,59 @@ export default function FeedbackListPage() {
   };
 
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return (
+      <div
+        className="text-gray-600 py-10"
+        role="status"
+        aria-label="Carregando feedbacks"
+      >
+        Carregando...
+      </div>
+    );
   }
   if (error) {
-    return <div>Erro ao carregar feedbacks: {error.message}</div>;
+    return (
+      <div
+        className="text-red-600 py-8 bg-red-50 rounded-xl border border-red-100 px-4"
+        role="alert"
+      >
+        Erro ao carregar feedbacks. Tente novamente.
+      </div>
+    );
   }
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-xl font-bold">Feedbacks Recebidos</h1>
-        <p className="text-gray-500 text-sm">
-          Total: {totalCount} feedbacks
-        </p>
+        <h1 className="text-xl font-bold text-gray-900">Feedbacks Recebidos</h1>
+        <p className="text-gray-600 text-sm">Total: {totalCount} feedbacks</p>
       </header>
 
       <div className="space-y-4">
         {feedbackList.length === 0 && (
-          <p className="text-gray-500">Nenhum feedback encontrado.</p>
+          <div
+            className="flex flex-col items-center justify-center py-12 px-4 rounded-xl border-2 border-dashed border-gray-200 bg-white text-center"
+            role="status"
+            aria-label="Nenhum feedback encontrado"
+          >
+            <MessageSquare
+              className="h-12 w-12 text-gray-400 mb-4"
+              aria-hidden
+            />
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
+              Nenhum feedback ainda
+            </h2>
+            <p className="text-gray-600 text-sm mb-6 max-w-sm">
+              Os feedbacks aparecem aqui quando alguém escanear o QR Code das
+              suas caixas e enviar uma mensagem.
+            </p>
+            <Link
+              href="/admin/boxes"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
+              <QrCode className="h-4 w-4" />
+              Ver caixas e QR Codes
+            </Link>
+          </div>
         )}
 
         {feedbackList.map((fb: Feedback) => {
@@ -80,15 +117,15 @@ export default function FeedbackListPage() {
                     fb.status === "pending"
                       ? "bg-yellow-100 text-yellow-700"
                       : fb.status === "resolved"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-700"
                   }`}
                 >
                   {fb.status === "pending"
                     ? "Pendente"
                     : fb.status === "resolved"
-                    ? "Resolvido"
-                    : fb.status}
+                      ? "Resolvido"
+                      : fb.status}
                 </span>
               </div>
 
@@ -110,20 +147,24 @@ export default function FeedbackListPage() {
               <div className="flex gap-2 pt-3 mt-3 border-t border-gray-200">
                 {isResolved ? (
                   <button
+                    type="button"
                     onClick={() => handleToggleStatus(fb.id, fb.status)}
                     disabled={updateFeedbackMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                    aria-label="Marcar feedback como pendente"
                   >
-                    <Clock size={14} />
+                    <Clock size={14} aria-hidden />
                     Marcar como Pendente
                   </button>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => handleToggleStatus(fb.id, fb.status)}
                     disabled={updateFeedbackMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                    aria-label="Marcar feedback como concluído"
                   >
-                    <CheckCircle2 size={14} />
+                    <CheckCircle2 size={14} aria-hidden />
                     Marcar como Concluído
                   </button>
                 )}

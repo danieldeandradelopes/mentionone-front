@@ -22,6 +22,7 @@ import Boxes from "@/@backend-types/Boxes";
 import Image from "next/image";
 import notify from "@/utils/notify";
 import { Trash2, Plus, Edit } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function EditBoxForm({ box }: { box: Boxes }) {
   const router = useRouter();
@@ -58,6 +59,8 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
   const [editingOptionType, setEditingOptionType] = useState<
     "criticism" | "suggestion" | "praise"
   >("suggestion");
+  const [deleteOptionId, setDeleteOptionId] = useState<number | null>(null);
+  const [deleteBoxConfirm, setDeleteBoxConfirm] = useState(false);
 
   // Valores iniciais do branding
   const initialPrimaryColor = branding?.primary_color || "#3B82F6";
@@ -179,14 +182,12 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
     setEditingOptionType("suggestion");
   };
 
-  const handleDeleteOption = async (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir esta opção?")) {
-      return;
-    }
-
+  const handleConfirmDeleteOption = async () => {
+    if (deleteOptionId == null) return;
     try {
-      await deleteFeedbackOptionMutation.mutateAsync(id);
+      await deleteFeedbackOptionMutation.mutateAsync(deleteOptionId);
       notify("Opção excluída com sucesso!", "success");
+      setDeleteOptionId(null);
     } catch {
       notify("Erro ao excluir opção", "error");
     }
@@ -230,14 +231,11 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
     }
   }
 
-  async function handleDelete() {
-    if (!confirm(`Tem certeza que deseja excluir a caixa "${box.name}"?`)) {
-      return;
-    }
-
+  async function handleConfirmDeleteBox() {
     try {
       await deleteBoxMutation.mutateAsync(box.id);
       notify("Caixa excluída com sucesso!", "success");
+      setDeleteBoxConfirm(false);
       router.push(
         returnToOnboarding ? "/admin/onboarding?step=3" : "/admin/boxes",
       );
@@ -583,10 +581,11 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDeleteOption(option.id)}
+                          onClick={() => setDeleteOptionId(option.id)}
                           disabled={deleteFeedbackOptionMutation.isPending}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
                           title="Excluir opção"
+                          aria-label="Excluir opção de feedback"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -630,14 +629,38 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
 
           <button
             type="button"
-            onClick={handleDelete}
+            onClick={() => setDeleteBoxConfirm(true)}
             disabled={deleteBoxMutation.isPending || isLoading}
-            className="w-full bg-red-600 text-white p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700"
+            className="w-full bg-red-600 text-white p-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+            aria-label="Excluir caixa"
           >
             {deleteBoxMutation.isPending ? "Excluindo..." : "Excluir caixa"}
           </button>
         </div>
       </form>
+
+      <ConfirmModal
+        open={!!deleteOptionId}
+        title="Excluir opção"
+        description="Tem certeza que deseja excluir esta opção de feedback? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleConfirmDeleteOption}
+        onCancel={() => setDeleteOptionId(null)}
+        isLoading={deleteFeedbackOptionMutation.isPending}
+      />
+      <ConfirmModal
+        open={deleteBoxConfirm}
+        title="Excluir caixa"
+        description={`Tem certeza que deseja excluir a caixa "${box.name}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={handleConfirmDeleteBox}
+        onCancel={() => setDeleteBoxConfirm(false)}
+        isLoading={deleteBoxMutation.isPending}
+      />
     </div>
   );
 }

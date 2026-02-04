@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useGetFeedbacks } from "@/hooks/integration/feedback/queries";
 import { useGetBoxes } from "@/hooks/integration/boxes/queries";
 import { useAuth } from "@/hooks/utils/use-auth";
@@ -151,9 +152,21 @@ export default function DashboardPage() {
 
       {/* CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card title="Total de Feedbacks" value={total} />
-        <Card title="Total de Caixas" value={boxes.length} />
-        <Card title="Feedbacks/dia (7 dias)" value={(total / 7).toFixed(1)} />
+        <Card
+          title="Total de Feedbacks"
+          value={total}
+          tooltip="Quantidade total de feedbacks recebidos"
+        />
+        <Card
+          title="Total de Caixas"
+          value={boxes.length}
+          tooltip="Número de caixas de feedback configuradas"
+        />
+        <Card
+          title="Feedbacks/dia (7 dias)"
+          value={(total / 7).toFixed(1)}
+          tooltip="Média diária dos últimos 7 dias"
+        />
         <Card
           title="Último feedback"
           value={
@@ -167,6 +180,7 @@ export default function DashboardPage() {
                 })
               : "Nenhum"
           }
+          tooltip="Data e hora do último feedback recebido"
         />
       </div>
 
@@ -273,8 +287,23 @@ export default function DashboardPage() {
       ) : null}
 
       {/* ÚLTIMOS FEEDBACKS */}
-      <section>
-        <h2 className="text-lg font-semibold mb-2">Últimos feedbacks</h2>
+      <section aria-labelledby="ultimos-feedbacks-heading">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <h2
+            id="ultimos-feedbacks-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
+            Últimos feedbacks
+          </h2>
+          {sortedFeedbacks.length > 0 && (
+            <Link
+              href="/admin/feedbacks"
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 rounded"
+            >
+              Ver todos
+            </Link>
+          )}
+        </div>
 
         <div className="space-y-3">
           {sortedFeedbacks.slice(0, 5).map((fb) => (
@@ -282,7 +311,7 @@ export default function DashboardPage() {
               key={fb.id}
               className="p-4 bg-white shadow rounded-xl border border-gray-100"
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center flex-wrap gap-2">
                 <span className="px-2 py-1 text-xs bg-indigo-100 text-indigo-600 rounded-full">
                   {fb.category}
                 </span>
@@ -307,11 +336,22 @@ export default function DashboardPage() {
   );
 }
 
-function Card({ title, value }: { title: string; value: string | number }) {
+function Card({
+  title,
+  value,
+  tooltip,
+}: {
+  title: string;
+  value: string | number;
+  tooltip?: string;
+}) {
   return (
-    <div className="p-4 bg-white rounded-xl shadow text-center border border-gray-100">
-      <p className="text-xs uppercase text-gray-500">{title}</p>
-      <p className="text-2xl font-semibold mt-1">{value}</p>
+    <div
+      className="p-4 bg-white rounded-xl shadow text-center border border-gray-100 min-w-0"
+      title={tooltip}
+    >
+      <p className="text-xs uppercase text-gray-600">{title}</p>
+      <p className="text-2xl font-semibold mt-1 text-gray-900">{value}</p>
     </div>
   );
 }
