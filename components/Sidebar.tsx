@@ -14,6 +14,8 @@ import {
   CreditCard,
   LifeBuoy,
   PlayCircle,
+  Building2,
+  ClipboardList,
 } from "lucide-react";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLogout } from "@/hooks/integration/auth/mutations";
@@ -33,10 +35,16 @@ export default function Sidebar() {
     return null;
   }
 
-  const links = [
+  const suggestionLinks = [
+    { href: "/admin/suggestions/boxes", label: "Caixas", icon: Box },
+    { href: "/admin/suggestions/feedbacks", label: "Feedbacks", icon: MessageSquare },
+  ];
+  const npsLinks = [
+    { href: "/admin/nps/campaigns", label: "Campanhas", icon: ClipboardList },
+    { href: "/admin/nps/branches", label: "Filiais", icon: Building2 },
+  ];
+  const mainLinks = [
     { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/boxes", label: "Boxes", icon: Box },
-    { href: "/admin/feedbacks", label: "Feedback", icon: MessageSquare },
     { href: "/admin/reports", label: "Relatórios", icon: BarChart },
     { href: "/admin/tutorials", label: "Tutoriais", icon: PlayCircle },
     { href: "/admin/payments", label: "Assinaturas", icon: CreditCard },
@@ -98,16 +106,80 @@ export default function Sidebar() {
         {/* NAV LINKS */}
         <nav className="flex-1 mt-4" aria-label="Navegação do painel">
           <ul className="flex flex-col gap-1 px-3">
-            {links.map(({ href, label, icon: Icon }) => {
+            <li>
+              <span className="px-3 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Sugestões
+              </span>
+            </li>
+            {suggestionLinks.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
-
               return (
                 <li key={href}>
                   <Link
                     href={href}
                     onClick={() => setOpen(false)}
                     className={`
-                      flex items-center gap-3 px-3 py-2 rounded-md text-sm transition
+                      flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ml-1
+                      ${
+                        active
+                          ? "bg-zinc-800 text-white"
+                          : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                      }
+                    `}
+                  >
+                    <Icon
+                      size={18}
+                      className={active ? "text-emerald-400" : "text-zinc-500"}
+                    />
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+            <li className="pt-2 mt-1 border-t border-zinc-800">
+              <span className="px-3 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                NPS
+              </span>
+            </li>
+            {npsLinks.map(({ href, label, icon: Icon }) => {
+              const active = pathname.startsWith(href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ml-1
+                      ${
+                        active
+                          ? "bg-zinc-800 text-white"
+                          : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                      }
+                    `}
+                  >
+                    <Icon
+                      size={18}
+                      className={active ? "text-emerald-400" : "text-zinc-500"}
+                    />
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+            <li className="pt-2 mt-1 border-t border-zinc-800">
+              <span className="px-3 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Painel
+              </span>
+            </li>
+            {mainLinks.map(({ href, label, icon: Icon }) => {
+              const active = pathname.startsWith(href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-3 py-2 rounded-md text-sm transition ml-1
                       ${
                         active
                           ? "bg-zinc-800 text-white"

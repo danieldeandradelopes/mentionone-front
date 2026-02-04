@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { Providers } from "@/providers/Providers";
 
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body>
         <Providers>
           <LayoutWrapper>{children}</LayoutWrapper>
+          <Toaster richColors position="top-center" />
         </Providers>
       </body>
     </html>

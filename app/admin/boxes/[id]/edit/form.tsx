@@ -24,10 +24,19 @@ import notify from "@/utils/notify";
 import { Trash2, Plus, Edit } from "lucide-react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
-export default function EditBoxForm({ box }: { box: Boxes }) {
+const DEFAULT_BOXES_PATH = "/admin/boxes";
+
+export default function EditBoxForm({
+  box,
+  returnBasePath,
+}: {
+  box: Boxes;
+  returnBasePath?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnToOnboarding = searchParams.get("from") === "onboarding";
+  const basePath = returnBasePath ?? DEFAULT_BOXES_PATH;
   const [name, setName] = useState(box.name);
   const [location, setLocation] = useState(box.location);
   const [slug, setSlug] = useState(box.slug);
@@ -237,7 +246,7 @@ export default function EditBoxForm({ box }: { box: Boxes }) {
       notify("Caixa excluída com sucesso!", "success");
       setDeleteBoxConfirm(false);
       router.push(
-        returnToOnboarding ? "/admin/onboarding?step=3" : "/admin/boxes",
+        returnToOnboarding ? "/admin/onboarding?step=3" : basePath,
       );
     } catch (error) {
       console.error(error);

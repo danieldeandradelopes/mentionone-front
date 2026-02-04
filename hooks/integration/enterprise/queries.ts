@@ -13,6 +13,8 @@ export interface Enterprise {
   document_type?: "cpf" | "cnpj" | null;
   email?: string | null;
   timezone: string;
+  sector?: string | null;
+  company_description_for_ai?: string | null;
   created_at?: string;
   updated_at?: string;
 }

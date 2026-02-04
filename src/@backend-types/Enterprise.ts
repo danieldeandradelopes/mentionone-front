@@ -13,6 +13,8 @@ export interface EnterpriseDTO {
   document_type?: "cpf" | "cnpj" | null;
   email?: string | null;
   timezone: string;
+  sector?: string | null;
+  company_description_for_ai?: string | null;
   deleted_at?: string | null;
   created_at?: string;
   updated_at?: string;
@@ -42,6 +44,8 @@ export default class Enterprise {
   readonly document_type?: "cpf" | "cnpj" | null;
   readonly email?: string | null;
   readonly timezone: string;
+  readonly sector?: string | null;
+  readonly company_description_for_ai?: string | null;
   readonly deleted_at?: string | null;
   readonly created_at?: string;
   readonly updated_at?: string;
@@ -60,6 +64,8 @@ export default class Enterprise {
     this.document_type = data.document_type;
     this.email = data.email;
     this.timezone = data.timezone || "America/Sao_Paulo";
+    this.sector = data.sector;
+    this.company_description_for_ai = data.company_description_for_ai;
     this.deleted_at = data.deleted_at;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;

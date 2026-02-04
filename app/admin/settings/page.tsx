@@ -20,7 +20,15 @@ import { useForm } from "react-hook-form";
 type EnterpriseFormData = Partial<
   Pick<
     Enterprise,
-    "name" | "cover" | "address" | "description" | "email" | "timezone" | "document"
+    | "name"
+    | "cover"
+    | "address"
+    | "description"
+    | "email"
+    | "timezone"
+    | "document"
+    | "sector"
+    | "company_description_for_ai"
   >
 > & {
   document_type?: "cpf" | "cnpj" | null;
@@ -47,6 +55,8 @@ export default function SettingsPage() {
       email: null,
       document: "",
       timezone: "America/Sao_Paulo",
+      sector: null,
+      company_description_for_ai: null,
     },
   });
 
@@ -80,6 +90,8 @@ export default function SettingsPage() {
         email: enterprise.email || null,
         document: enterprise.document || "",
         timezone: enterprise.timezone || "America/Sao_Paulo",
+        sector: enterprise.sector ?? null,
+        company_description_for_ai: enterprise.company_description_for_ai ?? null,
       };
       reset(formData);
 
@@ -270,6 +282,42 @@ export default function SettingsPage() {
             {errors.email?.message && (
               <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Setor de atuação
+            </label>
+            <select
+              className={inputClassName(false)}
+              {...register("sector")}
+            >
+              <option value="">Selecione o setor</option>
+              <option value="clothing_retail">Comércio de roupas</option>
+              <option value="auto_parts">Peças de automóveis</option>
+              <option value="dental_clinic">Clínicas odontológicas</option>
+              <option value="supermarket">Supermercados</option>
+              <option value="restaurant">Restaurantes e alimentação</option>
+              <option value="pharmacy">Farmácias</option>
+              <option value="other">Outro</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Descrição da empresa (para a IA)
+            </label>
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2">
+              Este texto será enviado à IA para melhorar as análises de Insights.
+              Não inclua informações confidenciais ou que você não queira que
+              sejam processadas pela IA.
+            </p>
+            <textarea
+              className={textAreaClassName(false)}
+              rows={4}
+              placeholder="Ex.: Somos uma pequena rede de lojas com 10 unidades no oeste paulista..."
+              {...register("company_description_for_ai")}
+            />
           </div>
 
           <div>

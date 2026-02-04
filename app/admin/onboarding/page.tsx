@@ -69,6 +69,9 @@ function OnboardingContent() {
   const [enterpriseEmail, setEnterpriseEmail] = useState("");
   const [enterpriseTimezone, setEnterpriseTimezone] =
     useState("America/Sao_Paulo");
+  const [enterpriseSector, setEnterpriseSector] = useState<string | null>(null);
+  const [enterpriseCompanyDescriptionForAi, setEnterpriseCompanyDescriptionForAi] =
+    useState<string | null>(null);
 
   const [boxName, setBoxName] = useState("");
   const [boxLocation, setBoxLocation] = useState("");
@@ -95,6 +98,10 @@ function OnboardingContent() {
       setEnterpriseDescription(enterprise.description || "");
       setEnterpriseEmail(enterprise.email || "");
       setEnterpriseTimezone(enterprise.timezone || "America/Sao_Paulo");
+      setEnterpriseSector(enterprise.sector ?? null);
+      setEnterpriseCompanyDescriptionForAi(
+        enterprise.company_description_for_ai ?? null
+      );
     }
   }, [enterprise]);
 
@@ -107,6 +114,9 @@ function OnboardingContent() {
         description: enterpriseDescription || undefined,
         email: enterpriseEmail || undefined,
         timezone: enterpriseTimezone,
+        sector: enterpriseSector || undefined,
+        company_description_for_ai:
+          enterpriseCompanyDescriptionForAi || undefined,
       });
       notify("Empresa atualizada!", "success");
       setStep(3);
@@ -305,6 +315,49 @@ function OnboardingContent() {
                     <option value="America/Fortaleza">Fortaleza</option>
                     <option value="America/Manaus">Manaus</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Setor de atuação
+                  </label>
+                  <select
+                    value={enterpriseSector ?? ""}
+                    onChange={(e) =>
+                      setEnterpriseSector(
+                        e.target.value ? e.target.value : null
+                      )
+                    }
+                    className={inputClass}
+                  >
+                    <option value="">Selecione o setor</option>
+                    <option value="clothing_retail">Comércio de roupas</option>
+                    <option value="auto_parts">Peças de automóveis</option>
+                    <option value="dental_clinic">Clínicas odontológicas</option>
+                    <option value="supermarket">Supermercados</option>
+                    <option value="restaurant">Restaurantes e alimentação</option>
+                    <option value="pharmacy">Farmácias</option>
+                    <option value="other">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Descrição da empresa (para a IA)
+                  </label>
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mb-2">
+                    Este texto será enviado à IA para melhorar as análises de
+                    Insights. Não inclua informações confidenciais.
+                  </p>
+                  <textarea
+                    rows={3}
+                    value={enterpriseCompanyDescriptionForAi ?? ""}
+                    onChange={(e) =>
+                      setEnterpriseCompanyDescriptionForAi(
+                        e.target.value || null
+                      )
+                    }
+                    className={inputClass}
+                    placeholder="Ex.: Somos uma pequena rede de 10 lojas no oeste paulista..."
+                  />
                 </div>
                 <div className="flex gap-2 pt-2">
                   <Button
