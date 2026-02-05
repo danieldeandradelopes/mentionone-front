@@ -7,11 +7,7 @@ import { useGetEnterpriseSettings } from "@/hooks/integration/enterprise/queries
 import { useUploadFile } from "@/hooks/integration/upload/upload-file";
 import Enterprise from "@/src/@backend-types/Enterprise";
 import notify from "@/utils/notify";
-import {
-  maskCpfCnpj,
-  onlyDigits,
-  validateCpfCnpj,
-} from "@/utils/cpf-cnpj";
+import { maskCpfCnpj, onlyDigits, validateCpfCnpj } from "@/utils/cpf-cnpj";
 import Image from "next/image";
 import { Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -20,11 +16,21 @@ import { useForm } from "react-hook-form";
 type EnterpriseFormData = Partial<
   Pick<
     Enterprise,
-    "name" | "cover" | "address" | "description" | "email" | "timezone" | "document"
+    | "name"
+    | "cover"
+    | "address"
+    | "description"
+    | "email"
+    | "timezone"
+    | "document"
   >
 > & {
   document_type?: "cpf" | "cnpj" | null;
 };
+
+const TERMS_PAGE_URL =
+  process.env.NEXT_PUBLIC_TERMS_PAGE_URL ||
+  "https://mentionone.com/termos-de-uso";
 
 export default function SettingsPage() {
   const { data: enterprise, isLoading } = useGetEnterpriseSettings();
@@ -54,14 +60,18 @@ export default function SettingsPage() {
     [
       "w-full rounded-lg border px-3 py-2 text-sm transition",
       "focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100",
-      hasError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-300",
+      hasError
+        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+        : "border-gray-300",
     ].join(" ");
 
   const textAreaClassName = (hasError?: boolean) =>
     [
       "w-full rounded-lg border px-3 py-2 text-sm transition",
       "focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100",
-      hasError ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-300",
+      hasError
+        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+        : "border-gray-300",
     ].join(" ");
 
   // Estados para upload de imagem
@@ -209,8 +219,7 @@ export default function SettingsPage() {
                   const documentDigits = onlyDigits(value || "");
                   if (!documentDigits) return true;
                   return (
-                    validateCpfCnpj(documentDigits) ||
-                    "CPF/CNPJ inválido."
+                    validateCpfCnpj(documentDigits) || "CPF/CNPJ inválido."
                   );
                 },
               })}
@@ -261,14 +270,15 @@ export default function SettingsPage() {
               {...register("email", {
                 validate: (value) => {
                   if (!value) return true;
-                  const emailRegex =
-                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                   return emailRegex.test(value) || "E-mail inválido.";
                 },
               })}
             />
             {errors.email?.message && (
-              <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+              <p className="text-sm text-red-600 mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -358,6 +368,59 @@ export default function SettingsPage() {
               : "Salvar Alterações"}
           </Button>
         </form>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          Termos de Uso
+        </h2>
+        {enterprise?.terms_accepted_at ? (
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>
+              Você aceitou os Termos de Uso em{" "}
+              <strong>
+                {new Date(enterprise.terms_accepted_at).toLocaleDateString(
+                  "pt-BR",
+                  {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )}
+              </strong>
+              .
+            </p>
+            {enterprise.terms_accepted_ip && (
+              <p className="text-gray-500 text-xs">
+                IP de aceite: {enterprise.terms_accepted_ip}
+              </p>
+            )}
+            <p>
+              <a
+                href={TERMS_PAGE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:text-indigo-700 underline"
+              >
+                Ver Termos de Uso
+              </a>
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">
+            Informação de aceite dos Termos de Uso não disponível.{" "}
+            <a
+              href={TERMS_PAGE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:text-indigo-700 underline"
+            >
+              Ver Termos de Uso
+            </a>
+          </p>
+        )}
       </Card>
     </div>
   );

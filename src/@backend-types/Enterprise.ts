@@ -13,15 +13,17 @@ export interface EnterpriseDTO {
   document_type?: "cpf" | "cnpj" | null;
   email?: string | null;
   timezone: string;
+  terms_accepted_at?: string | null;
+  terms_accepted_ip?: string | null;
   deleted_at?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface EnterpriseProps extends EnterpriseDTO {
-  social_medias?: any[];
-  phones?: any[];
-  branding?: any[];
+  social_medias?: SocialMedia[];
+  phones?: Phone[];
+  branding?: Branding[];
 }
 
 export type EnterpriseWithDefaultTemplate = Omit<
@@ -42,12 +44,14 @@ export default class Enterprise {
   readonly document_type?: "cpf" | "cnpj" | null;
   readonly email?: string | null;
   readonly timezone: string;
+  readonly terms_accepted_at?: string | null;
+  readonly terms_accepted_ip?: string | null;
   readonly deleted_at?: string | null;
   readonly created_at?: string;
   readonly updated_at?: string;
-  readonly social_medias?: any[];
-  readonly phones?: any[];
-  readonly branding?: any[];
+  readonly social_medias?: SocialMedia[];
+  readonly phones?: Phone[];
+  readonly branding?: Branding[];
 
   constructor(data: EnterpriseProps) {
     this.id = data.id;
@@ -60,6 +64,8 @@ export default class Enterprise {
     this.document_type = data.document_type;
     this.email = data.email;
     this.timezone = data.timezone || "America/Sao_Paulo";
+    this.terms_accepted_at = data.terms_accepted_at;
+    this.terms_accepted_ip = data.terms_accepted_ip;
     this.deleted_at = data.deleted_at;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
