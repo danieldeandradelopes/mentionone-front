@@ -4,6 +4,8 @@ import { useGetInsightsLatest, useGetInsightsHistory } from "@/hooks/integration
 import { useGenerateInsights } from "@/hooks/integration/insights/mutations";
 import { Sparkles, Loader2, History, FileText } from "lucide-react";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import notify from "@/utils/notify";
 import type { AIAnalysisRun } from "@/src/@backend-types/Insights";
 function formatDate(iso?: string): string {
@@ -18,6 +20,38 @@ function formatDate(iso?: string): string {
   }
 }
 
+const reportHeading =
+  "mb-4 mt-6 text-xl font-bold text-zinc-900 border-b border-zinc-200 pb-2 first:mt-0";
+const markdownComponents = {
+  h1: ({ children, ...props }: React.ComponentPropsWithoutRef<"h1">) => (
+    <h1 className={reportHeading} {...props}>{children}</h1>
+  ),
+  h2: ({ children, ...props }: React.ComponentPropsWithoutRef<"h2">) => (
+    <h2 className="mb-3 mt-5 text-lg font-semibold text-zinc-900" {...props}>{children}</h2>
+  ),
+  h3: ({ children, ...props }: React.ComponentPropsWithoutRef<"h3">) => (
+    <h3 className="mb-2 mt-4 text-base font-semibold text-zinc-800" {...props}>{children}</h3>
+  ),
+  h4: ({ children, ...props }: React.ComponentPropsWithoutRef<"h4">) => (
+    <h4 className="mb-1.5 mt-3 text-sm font-semibold text-zinc-800" {...props}>{children}</h4>
+  ),
+  p: ({ children, ...props }: React.ComponentPropsWithoutRef<"p">) => (
+    <p className="my-2 text-zinc-700 leading-relaxed" {...props}>{children}</p>
+  ),
+  ul: ({ children, ...props }: React.ComponentPropsWithoutRef<"ul">) => (
+    <ul className="my-3 list-disc pl-6 space-y-1 text-zinc-700" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }: React.ComponentPropsWithoutRef<"ol">) => (
+    <ol className="my-3 list-decimal pl-6 space-y-1 text-zinc-700" {...props}>{children}</ol>
+  ),
+  li: ({ children, ...props }: React.ComponentPropsWithoutRef<"li">) => (
+    <li className="leading-relaxed" {...props}>{children}</li>
+  ),
+  strong: ({ children, ...props }: React.ComponentPropsWithoutRef<"strong">) => (
+    <strong className="font-semibold text-zinc-900" {...props}>{children}</strong>
+  ),
+};
+
 function ReportBlock({ run }: { run: AIAnalysisRun }) {
   const payload = run.payload as { report?: string; generatedAt?: string };
   const report = payload?.report ?? "";
@@ -27,11 +61,10 @@ function ReportBlock({ run }: { run: AIAnalysisRun }) {
         <FileText size={16} />
         Gerado em {formatDate(payload?.generatedAt ?? run.created_at)}
       </div>
-      <div
-        className="prose prose-sm max-w-none text-zinc-700 whitespace-pre-wrap font-sans"
-        style={{ whiteSpace: "pre-wrap" }}
-      >
-        {report}
+      <div className="insights-report text-sm max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {report}
+        </ReactMarkdown>
       </div>
     </div>
   );

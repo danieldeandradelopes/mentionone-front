@@ -3,6 +3,7 @@ import type {
   NPSCampaign,
   NPSCampaignWithQuestions,
 } from "@/src/@backend-types/NPSCampaign";
+import type { NPSAnalyticsPayload } from "@/src/@backend-types/NPSAnalytics";
 import { useQuery } from "@tanstack/react-query";
 import { NPS_CAMPAIGNS_KEYS } from "./keys";
 
@@ -31,6 +32,20 @@ export const useGetNPSCampaign = (id: number) => {
     },
     retry: false,
     enabled: !!id,
+  });
+};
+
+export const useGetNPSAnalytics = () => {
+  return useQuery<NPSAnalyticsPayload, Error>({
+    queryKey: NPS_CAMPAIGNS_KEYS.analytics(),
+    queryFn: async () => {
+      const response = await api.get<NPSAnalyticsPayload>({
+        url: "/nps-campaigns/analytics",
+      });
+      return response;
+    },
+    retry: false,
+    refetchOnWindowFocus: true,
   });
 };
 

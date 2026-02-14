@@ -2,24 +2,41 @@
 
 import Link from "next/link";
 import { useGetNPSCampaigns } from "@/hooks/integration/nps-campaigns/queries";
-import { Plus, ClipboardList, Edit, Trash2, Link2 } from "lucide-react";
+import { useGetBranches } from "@/hooks/integration/branches/queries";
+import {
+  Plus,
+  ClipboardList,
+  Edit,
+  Trash2,
+  Link2,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+} from "lucide-react";
 import { useState } from "react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { useDeleteNPSCampaign } from "@/hooks/integration/nps-campaigns/mutations";
 import notify from "@/utils/notify";
 import type { NPSCampaign } from "@/src/@backend-types/NPSCampaign";
 
-function getPublicNpsUrl(slug: string): string {
-  if (typeof window !== "undefined") return `${window.location.origin}/nps/${slug}`;
-  if (process.env.NEXT_PUBLIC_APP_URL) return `${process.env.NEXT_PUBLIC_APP_URL}/nps/${slug}`;
-  return `http://localhost:3000/nps/${slug}`;
+function getPublicNpsUrl(slug: string, branchSlug?: string | null): string {
+  const base =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const path = `${base}/nps/${slug}`;
+  if (branchSlug) return `${path}?branch=${encodeURIComponent(branchSlug)}`;
+  return path;
 }
 
 export default function NPSCampaignsPage() {
   const { data: campaigns = [], isLoading, error } = useGetNPSCampaigns();
+  const { data: branches = [] } = useGetBranches();
   const deleteMutation = useDeleteNPSCampaign();
   const [deleteTarget, setDeleteTarget] = useState<NPSCampaign | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
@@ -39,6 +56,13 @@ export default function NPSCampaignsPage() {
     setCopiedSlug(slug);
     notify("Link copiado!", "success");
     setTimeout(() => setCopiedSlug(null), 2000);
+  };
+
+  const handleCopyBranchLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(url);
+    notify("Link copiado!", "success");
+    setTimeout(() => setCopiedUrl(null), 2000);
   };
 
   if (isLoading) {
@@ -94,53 +118,113 @@ export default function NPSCampaignsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {campaigns.map((c) => (
-            <div
-              key={c.id}
-              className="p-4 border border-gray-200 rounded-xl bg-white flex flex-col sm:flex-row sm:items-center gap-4"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-gray-800">{c.name}</p>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded ${
-                      c.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {c.active ? "Ativa" : "Inativa"}
-                  </span>
+          {campaigns.map((c) => {
+            const isExpanded = expandedId === c.id;
+            return (
+              <div
+                key={c.id}
+                className="border border-gray-200 rounded-xl bg-white overflow-hidden"
+              >
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-gray-800">{c.name}</p>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded ${
+                          c.active
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {c.active ? "Ativa" : "Inativa"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500 truncate">/{c.slug}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId(isExpanded ? null : c.id)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                      title="Ver links por filial"
+                    >
+                      {isExpanded ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      )}
+                      Links por filial
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyLink(c.slug)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                      title="Copiar link da pesquisa"
+                    >
+                      <Link2 size={14} />
+                      {copiedSlug === c.slug ? "Copiado!" : "Copiar link"}
+                    </button>
+                    <Link
+                      href={`/admin/nps/campaigns/${c.id}/edit`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                    >
+                      <Edit size={14} />
+                      Editar
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(c)}
+                      disabled={deleteMutation.isPending}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                    >
+                      <Trash2 size={14} />
+                      Excluir
+                    </button>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-500 truncate">/{c.slug}</p>
+                {isExpanded && (
+                  <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+                    <p className="text-xs text-gray-500 mb-3">
+                      Use o link de cada filial naquela unidade para associar as
+                      respostas às métricas.
+                    </p>
+                    {branches.length === 0 ? (
+                      <p className="text-sm text-gray-500">
+                        Cadastre filiais em <strong>NPS → Filiais</strong> para
+                        gerar links por unidade.
+                      </p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {branches.map((branch) => {
+                          const url = getPublicNpsUrl(c.slug, branch.slug);
+                          const isCopied = copiedUrl === url;
+                          return (
+                            <li
+                              key={branch.id}
+                              className="flex items-center justify-between gap-2 rounded border border-gray-100 bg-white px-3 py-2 text-sm"
+                            >
+                              <span className="font-medium text-gray-800 truncate flex-1">
+                                {branch.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyBranchLink(url)}
+                                className="inline-flex items-center gap-1.5 shrink-0 px-2 py-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                title="Copiar link"
+                              >
+                                <Copy size={14} />
+                                {isCopied ? "Copiado!" : "Copiar"}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleCopyLink(c.slug)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
-                  title="Copiar link da pesquisa"
-                >
-                  <Link2 size={14} />
-                  {copiedSlug === c.slug ? "Copiado!" : "Copiar link"}
-                </button>
-                <Link
-                  href={`/admin/nps/campaigns/${c.id}/edit`}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50 rounded-lg"
-                >
-                  <Edit size={14} />
-                  Editar
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setDeleteTarget(c)}
-                  disabled={deleteMutation.isPending}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
-                >
-                  <Trash2 size={14} />
-                  Excluir
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

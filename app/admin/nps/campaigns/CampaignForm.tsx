@@ -19,7 +19,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { NPSCampaignWithQuestions, NPSQuestionInput } from "@/src/@backend-types/NPSCampaign";
-import { GripVertical, Trash2, Plus } from "lucide-react";
+import { GripVertical, Trash2, Plus, Link2, Copy } from "lucide-react";
+import { useGetBranches } from "@/hooks/integration/branches/queries";
+import notify from "@/utils/notify";
 
 export type OptionFormItem = { label: string; order?: number; tempId?: string };
 export type QuestionFormItem = NPSQuestionInput & {
@@ -50,6 +52,70 @@ function slugFromName(name: string): string {
     .trim()
     .replace(/\s+/g, "-")
     .toLowerCase();
+}
+
+function getNpsBaseUrl(): string {
+  if (typeof window !== "undefined") return window.location.origin;
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  return "";
+}
+
+function LinksPorFilial({ slug }: { slug: string }) {
+  const { data: branches = [], isLoading } = useGetBranches();
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+  const baseUrl = getNpsBaseUrl();
+  const copyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(url);
+    notify("Link copiado!", "success");
+    setTimeout(() => setCopiedUrl(null), 2000);
+  };
+
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-1">
+        <Link2 size={16} />
+        Links por filial
+      </h3>
+      <p className="text-xs text-gray-500 mb-3">
+        Use o link de cada filial naquela unidade para que as respostas fiquem associadas à filial nas métricas.
+      </p>
+      {isLoading ? (
+        <p className="text-sm text-gray-500">Carregando filiais...</p>
+      ) : branches.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          Cadastre filiais em <strong>NPS → Filiais</strong> para gerar links por unidade.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {branches.map((branch) => {
+            const url = `${baseUrl}/nps/${slug}?branch=${encodeURIComponent(branch.slug)}`;
+            const isCopied = copiedUrl === url;
+            return (
+              <li
+                key={branch.id}
+                className="flex items-center justify-between gap-2 rounded border border-gray-100 bg-white px-3 py-2 text-sm"
+              >
+                <span className="font-medium text-gray-800 truncate flex-1">
+                  {branch.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => copyUrl(url)}
+                  className="inline-flex items-center gap-1.5 shrink-0 px-2 py-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                  title="Copiar link"
+                >
+                  <Copy size={14} />
+                  {isCopied ? "Copiado!" : "Copiar"}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 function SortableQuestionRow({
@@ -372,6 +438,10 @@ export default function CampaignForm({
           />
           <span className="text-sm text-gray-700">Campanha ativa</span>
         </label>
+
+        {slug.trim() && (
+          <LinksPorFilial slug={slug.trim()} />
+        )}
       </div>
 
       <div>

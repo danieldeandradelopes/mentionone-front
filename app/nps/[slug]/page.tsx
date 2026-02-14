@@ -1,10 +1,10 @@
 "use client";
 
-import { use, useState, useCallback, useEffect } from "react";
+import { use, useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGetNPSCampaignBySlugPublic } from "@/hooks/integration/nps-campaigns/queries";
 import { useSubmitNPSResponse } from "@/hooks/integration/nps-campaigns/mutations";
-import type { NPSCampaignWithQuestions, NPSQuestion, NPSQuestionOption } from "@/src/@backend-types/NPSCampaign";
+import type { NPSQuestion, NPSQuestionOption } from "@/src/@backend-types/NPSCampaign";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -28,7 +28,7 @@ export default function NPSFormPage({ params }: Props) {
     multipleChoice: [],
   });
 
-  const questions = campaign?.questions ?? [];
+  const questions = useMemo(() => campaign?.questions ?? [], [campaign?.questions]);
   const totalSteps = questions.length;
   const isSummary = step >= totalSteps && totalSteps > 0;
   const currentQuestion = !isSummary ? questions[step] : null;
@@ -43,8 +43,20 @@ export default function NPSFormPage({ params }: Props) {
   }, [step, totalSteps, isSummary]);
 
   const handleBack = useCallback(() => {
-    if (step > 0) setStep((s) => s - 1);
-  }, [step]);
+    if (step <= 0) return;
+    const nextStep = step - 1;
+    const questionWeAreGoingTo = questions[nextStep];
+    setAnswers((a) => {
+      const next = { ...a };
+      if (questionWeAreGoingTo?.type === "nps") {
+        next.npsScore = null;
+      } else if (questionWeAreGoingTo?.type === "multiple_choice" && questionWeAreGoingTo?.id != null) {
+        next.multipleChoice = a.multipleChoice.filter((x) => x.questionId !== questionWeAreGoingTo.id);
+      }
+      return next;
+    });
+    setStep(nextStep);
+  }, [step, questions]);
 
   const setNpsScore = (score: number) => {
     setAnswers((a) => ({ ...a, npsScore: score }));
@@ -93,16 +105,16 @@ export default function NPSFormPage({ params }: Props) {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500">Carregando pesquisa...</p>
+      <main className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-gray-100 px-4">
+        <p className="text-gray-500 text-sm sm:text-base">Carregando pesquisa...</p>
       </main>
     );
   }
   if (isError || !campaign) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
-        <h1 className="text-xl font-bold text-red-600 mb-2">Pesquisa não encontrada</h1>
-        <p className="text-gray-600 text-sm">{error?.message ?? "Link inválido ou pesquisa inativa."}</p>
+      <main className="min-h-screen min-h-[100dvh] flex flex-col items-center justify-center px-4 py-6 sm:p-6 bg-white">
+        <h1 className="text-lg sm:text-xl font-bold text-red-600 mb-2 text-center">Pesquisa não encontrada</h1>
+        <p className="text-gray-600 text-sm text-center">{error?.message ?? "Link inválido ou pesquisa inativa."}</p>
       </main>
     );
   }
@@ -110,18 +122,18 @@ export default function NPSFormPage({ params }: Props) {
   const progress = totalSteps > 0 ? ((isSummary ? totalSteps : step + 1) / (totalSteps + 1)) * 100 : 0;
 
   return (
-    <main className="min-h-screen flex flex-col bg-gray-50">
-      <div className="w-full h-1 bg-gray-200">
+    <main className="min-h-screen min-h-[100dvh] flex flex-col bg-gray-100">
+      <div className="w-full h-1.5 sm:h-1 bg-gray-200 shrink-0">
         <div
-          className="h-full bg-indigo-600 transition-all duration-300"
+          className="h-full bg-indigo-600 transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-lg mx-auto w-full">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 max-w-lg mx-auto w-full overflow-auto">
         {isSummary ? (
-          <div className="w-full bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Revise suas respostas</h2>
-            <ul className="space-y-2 text-sm text-gray-700 mb-6">
+          <div className="w-full bg-white rounded-2xl shadow-md sm:shadow-lg p-5 sm:p-6 md:p-8">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Revise suas respostas</h2>
+            <ul className="space-y-2 text-sm text-gray-700 mb-5 sm:mb-6">
               {answers.npsScore !== null && (
                 <li>
                   <strong>NPS:</strong> {answers.npsScore}
@@ -137,11 +149,11 @@ export default function NPSFormPage({ params }: Props) {
                 );
               })}
             </ul>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-col-reverse sm:flex-row">
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="w-full sm:w-auto px-4 py-3 sm:py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl sm:rounded-lg font-medium min-h-[44px] sm:min-h-0 touch-manipulation"
               >
                 Voltar
               </button>
@@ -149,39 +161,39 @@ export default function NPSFormPage({ params }: Props) {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitMutation.isPending}
-                className="flex-1 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                className="w-full sm:flex-1 py-3 sm:py-2.5 bg-indigo-600 text-white font-medium rounded-xl sm:rounded-lg hover:bg-indigo-700 disabled:opacity-50 min-h-[44px] sm:min-h-0 touch-manipulation"
               >
                 {submitMutation.isPending ? "Enviando..." : "Enviar"}
               </button>
             </div>
           </div>
         ) : currentQuestion ? (
-          <div className="w-full bg-white rounded-2xl shadow-lg p-8">
-            <p className="text-sm text-gray-500 mb-2">
+          <div className="w-full bg-white rounded-2xl shadow-md sm:shadow-lg p-5 sm:p-6 md:p-8">
+            <p className="text-xs sm:text-sm text-gray-500 mb-1.5 sm:mb-2">
               Pergunta {step + 1} de {totalSteps}
             </p>
-            <h2 className="text-xl font-bold text-gray-800 mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 leading-snug">
               {currentQuestion.title}
             </h2>
             {currentQuestion.type === "nps" ? (
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 justify-center">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                     <button
                       key={n}
                       type="button"
                       onClick={() => setNpsScore(n)}
-                      className={`w-12 h-12 rounded-full font-semibold transition ${
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full font-semibold transition-colors touch-manipulation text-sm sm:text-base ${
                         answers.npsScore === n
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          ? "bg-indigo-600 text-white ring-2 ring-indigo-300"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300"
                       }`}
                     >
                       {n}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-gray-500 text-center px-1">
                   0 = muito insatisfeito, 10 = muito satisfeito
                 </p>
               </div>
@@ -196,12 +208,12 @@ export default function NPSFormPage({ params }: Props) {
                       if (step < totalSteps - 1) setTimeout(handleNext, 200);
                       else setStep(totalSteps);
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition ${
+                    className={`w-full text-left px-4 py-3.5 sm:py-3 rounded-xl border-2 transition-colors min-h-[48px] sm:min-h-[44px] touch-manipulation ${
                       answers.multipleChoice.some(
                         (a) => a.questionId === currentQuestion.id && a.optionId === opt.id
                       )
-                        ? "border-indigo-600 bg-indigo-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-indigo-600 bg-indigo-50 text-indigo-900"
+                        : "border-gray-200 hover:border-gray-300 active:border-gray-400"
                     }`}
                   >
                     {opt.label}
@@ -210,12 +222,12 @@ export default function NPSFormPage({ params }: Props) {
               </div>
             )}
             {currentQuestion.type === "nps" && (
-              <div className="mt-8 flex justify-end">
+              <div className="mt-6 sm:mt-8 flex justify-end">
                 <button
                   type="button"
                   onClick={handleNext}
                   disabled={answers.npsScore === null}
-                  className="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-3 sm:py-2.5 bg-indigo-600 text-white font-medium rounded-xl sm:rounded-lg hover:bg-indigo-700 disabled:opacity-50 min-h-[44px] sm:min-h-0 touch-manipulation"
                 >
                   Próxima
                 </button>
@@ -223,7 +235,7 @@ export default function NPSFormPage({ params }: Props) {
             )}
           </div>
         ) : (
-          <p className="text-gray-500">Nenhuma pergunta nesta pesquisa.</p>
+          <p className="text-gray-500 text-sm sm:text-base">Nenhuma pergunta nesta pesquisa.</p>
         )}
       </div>
     </main>

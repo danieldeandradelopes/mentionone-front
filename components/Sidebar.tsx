@@ -17,6 +17,7 @@ import {
   Building2,
   ClipboardList,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLogout } from "@/hooks/integration/auth/mutations";
@@ -41,6 +42,7 @@ export default function Sidebar() {
     { href: "/admin/suggestions/feedbacks", label: "Feedbacks", icon: MessageSquare },
   ];
   const npsLinks = [
+    { href: "/admin/nps/analytics", label: "Métricas NPS", icon: TrendingUp },
     { href: "/admin/nps/campaigns", label: "Campanhas", icon: ClipboardList },
     { href: "/admin/nps/branches", label: "Filiais", icon: Building2 },
   ];
